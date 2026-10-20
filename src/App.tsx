@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Sidebar from './components/Sidebar';
 import ChatPanel from './components/ChatPanel';
@@ -17,11 +17,14 @@ import VoiceConversation from './components/VoiceConversation';
 import AutocorrectPanel from './components/AutocorrectPanel';
 import ConnectorsPanel from './components/ConnectorsPanel';
 import DeviceActionPanel from './components/DeviceActionPanel';
+import TaskQueuePanel from './components/TaskQueuePanel';
 import { generateCode, generateResponse } from './utils/codeGenerator';
 import { pendingActions, executeAfterConfirmation, requestConfirmation } from './utils/safetySystem';
+import { taskQueue, createTaskFromPrompt } from './utils/taskQueue';
+import { needleIntegration, startNeedleMonitoring } from './utils/needleIntegration';
 import { PanelRight, PanelBottom, Maximize2, Terminal } from 'lucide-react';
 
-export type PanelView = 'chat' | 'preview' | 'mind' | 'terminal' | 'projects' | 'templates' | 'settings' | 'build' | 'ram' | 'voice' | 'autocorrect' | 'connectors';
+export type PanelView = 'chat' | 'preview' | 'mind' | 'terminal' | 'projects' | 'templates' | 'settings' | 'build' | 'ram' | 'voice' | 'autocorrect' | 'connectors' | 'tasks';
 export type ProjectPhase = 'brainstorm' | 'code';
 export type AuthMode = 'logged-in' | 'guest' | 'none';
 export type LayoutMode = 'split' | 'chat-only' | 'preview-only';
@@ -77,6 +80,14 @@ function App() {
   const [terminalLines, setTerminalLines] = useState<string[]>([]);
   const [layoutMode, setLayoutMode] = useState<LayoutMode>('split');
   const [showTerminal, setShowTerminal] = useState(false);
+
+  // Start Needle monitoring for automatic task refresh
+  useEffect(() => {
+    startNeedleMonitoring();
+    return () => {
+      needleIntegration.stopMonitoring();
+    };
+  }, []);
 
   const handleLogin = () => { setAuthMode('logged-in'); setShowAuth(false); };
   const handleGuest = () => { setAuthMode('guest'); setShowAuth(false); };
@@ -135,6 +146,26 @@ function App() {
     setMessages(prev => [...prev, aiMsg]);
     setIsAIBusy(false);
     setAiStatus('');
+  };
+
+  const handleInterrupt = (urgentPrompt: string) => {
+    // Interrupt current task with urgent prompt
+    const currentTask = taskQueue.getCurrentTask();
+    if (currentTask) {
+      taskQueue.pauseCurrentTask();
+      addTerminalLine(`⚠️ Task interrupted: ${currentTask.prompt.substring(0, 50)}...`);
+    }
+    
+    // Create urgent task
+    const urgentTask = taskQueue.interruptForUrgent(urgentPrompt);
+    addTerminalLine(`🚨 Urgent task created: ${urgentPrompt.substring(0, 50)}...`);
+    addTerminalLine(`✓ Needle will refresh to handle urgent request`);
+    
+    // Trigger Needle refresh
+    needleIntegration.manualRefresh(urgentTask.id);
+    
+    // Switch to tasks panel to show progress
+    setActivePanel('tasks');
   };
 
   const handleStartProject = (project: Project) => {
@@ -325,6 +356,7 @@ function App() {
                 {activePanel === 'voice' && <VoiceConversation active={voiceActive} setActive={setVoiceActive} ttsEnabled={ttsEnabled} setTtsEnabled={setTtsEnabled} />}
                 {activePanel === 'autocorrect' && <AutocorrectPanel />}
                 {activePanel === 'connectors' && <ConnectorsPanel />}
+                {activePanel === 'tasks' && <TaskQueuePanel onInterrupt={handleInterrupt} />}
                 {activePanel === 'preview' && layoutMode === 'chat-only' && <PreviewPanel generatedCode={generatedCode} />}
               </div>
             </div>

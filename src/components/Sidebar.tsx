@@ -4,7 +4,7 @@ import {
   MessageSquare, Eye, Brain, Terminal, FolderOpen, Layout,
   ChevronLeft, ChevronRight, LogOut, Settings, Rocket,
   Activity, Volume2, Wand2, FileCode, Plus, Folder, ChevronDown,
-  PanelRight, PanelBottom, Maximize2, Minimize2, Zap
+  PanelRight, PanelBottom, Maximize2, Minimize2, Zap, ListTodo
 } from 'lucide-react';
 import type { PanelView, Project, AuthMode } from '../App';
 
@@ -105,6 +105,15 @@ export default function Sidebar({
               title="Connectors"
             >
               <Zap size={16} />
+            </button>
+            <button
+              onClick={() => setActivePanel('tasks')}
+              className={`p-2 rounded transition-colors ${
+                activePanel === 'tasks' ? 'bg-purple-600/20 text-purple-400' : 'text-gray-400 hover:bg-[#2a2a2a]'
+              }`}
+              title="Task Queue"
+            >
+              <ListTodo size={16} />
             </button>
           </>
         )}
