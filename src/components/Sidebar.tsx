@@ -1,7 +1,8 @@
 import { motion } from 'framer-motion';
 import {
   MessageSquare, Eye, Brain, Terminal, FolderOpen, Layout,
-  ChevronLeft, ChevronRight, LogOut, Mic
+  ChevronLeft, ChevronRight, LogOut, Mic, Settings, Rocket,
+  Activity, Volume2, Wand2
 } from 'lucide-react';
 import type { PanelView, Project } from '../App';
 
@@ -14,18 +15,25 @@ interface SidebarProps {
   currentProject: Project | null;
 }
 
-const navItems: { id: PanelView; icon: typeof MessageSquare; label: string }[] = [
-  { id: 'chat', icon: MessageSquare, label: 'Chat' },
-  { id: 'preview', icon: Eye, label: 'Preview' },
-  { id: 'mind', icon: Brain, label: 'Mind' },
-  { id: 'terminal', icon: Terminal, label: 'Terminal' },
-  { id: 'projects', icon: FolderOpen, label: 'Projects' },
-  { id: 'templates', icon: Layout, label: 'Templates' },
+const navItems: { id: PanelView; icon: typeof MessageSquare; label: string; section: string }[] = [
+  { id: 'chat', icon: MessageSquare, label: 'Chat', section: 'Core' },
+  { id: 'preview', icon: Eye, label: 'Preview', section: 'Core' },
+  { id: 'mind', icon: Brain, label: 'Mind', section: 'Core' },
+  { id: 'terminal', icon: Terminal, label: 'Terminal', section: 'Core' },
+  { id: 'projects', icon: FolderOpen, label: 'Projects', section: 'Core' },
+  { id: 'templates', icon: Layout, label: 'Templates', section: 'Core' },
+  { id: 'build', icon: Rocket, label: 'Build', section: 'Tools' },
+  { id: 'ram', icon: Activity, label: 'RAM Graph', section: 'Tools' },
+  { id: 'voice', icon: Volume2, label: 'Voice', section: 'Tools' },
+  { id: 'autocorrect', icon: Wand2, label: 'Autocorrect', section: 'Tools' },
+  { id: 'settings', icon: Settings, label: 'Settings', section: 'System' },
 ];
 
 export default function Sidebar({
   activePanel, setActivePanel, collapsed, setCollapsed, onLogout, currentProject
 }: SidebarProps) {
+  const sections = [...new Set(navItems.map(item => item.section))];
+
   return (
     <motion.div
       animate={{ width: collapsed ? 64 : 220 }}
@@ -55,25 +63,33 @@ export default function Sidebar({
       )}
 
       {/* Navigation */}
-      <nav className="flex-1 py-4">
-        {navItems.map(item => {
-          const Icon = item.icon;
-          const isActive = activePanel === item.id;
-          return (
-            <button
-              key={item.id}
-              onClick={() => setActivePanel(item.id)}
-              className={`w-full flex items-center gap-3 px-4 py-3 transition-colors ${
-                isActive
-                  ? 'bg-purple-600/20 text-purple-300 border-r-2 border-purple-400'
-                  : 'text-gray-400 hover:bg-gray-700 hover:text-white'
-              }`}
-            >
-              <Icon size={20} />
-              {!collapsed && <span className="text-sm font-medium">{item.label}</span>}
-            </button>
-          );
-        })}
+      <nav className="flex-1 py-2 overflow-y-auto">
+        {sections.map(section => (
+          <div key={section} className="mb-2">
+            {!collapsed && (
+              <p className="px-4 py-1 text-xs text-gray-500 uppercase tracking-wider">{section}</p>
+            )}
+            {navItems.filter(item => item.section === section).map(item => {
+              const Icon = item.icon;
+              const isActive = activePanel === item.id;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => setActivePanel(item.id)}
+                  className={`w-full flex items-center gap-3 px-4 py-2.5 transition-colors ${
+                    isActive
+                      ? 'bg-purple-600/20 text-purple-300 border-r-2 border-purple-400'
+                      : 'text-gray-400 hover:bg-gray-700 hover:text-white'
+                  }`}
+                  title={collapsed ? item.label : undefined}
+                >
+                  <Icon size={18} />
+                  {!collapsed && <span className="text-sm font-medium">{item.label}</span>}
+                </button>
+              );
+            })}
+          </div>
+        ))}
       </nav>
 
       {/* Bottom Section */}
@@ -85,6 +101,10 @@ export default function Sidebar({
               <span className="text-xs text-green-400">Voice Ready</span>
             </div>
             <p className="text-xs text-gray-400">KittenTTS + Whistle</p>
+            <div className="mt-2 flex items-center gap-2">
+              <span className="px-1.5 py-0.5 bg-gray-600 rounded text-xs text-gray-300">🪡 Needle</span>
+              <span className="px-1.5 py-0.5 bg-gray-600 rounded text-xs text-gray-300">🧠 xerj</span>
+            </div>
           </div>
         )}
         <button

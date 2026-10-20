@@ -10,8 +10,13 @@ import AuthModal from './components/AuthModal';
 import ProjectManager from './components/ProjectManager';
 import TemplateLibrary from './components/TemplateLibrary';
 import VettingPanel from './components/VettingPanel';
+import SettingsPanel from './components/SettingsPanel';
+import BuildPipeline from './components/BuildPipeline';
+import RamGraphStatus from './components/RamGraphStatus';
+import VoiceConversation from './components/VoiceConversation';
+import AutocorrectPanel from './components/AutocorrectPanel';
 
-export type PanelView = 'chat' | 'preview' | 'mind' | 'terminal' | 'projects' | 'templates';
+export type PanelView = 'chat' | 'preview' | 'mind' | 'terminal' | 'projects' | 'templates' | 'settings' | 'build' | 'ram' | 'voice' | 'autocorrect';
 export type ProjectPhase = 'brainstorm' | 'code';
 
 export interface Project {
@@ -78,7 +83,6 @@ function App() {
     };
     setMessages(prev => [...prev, userMsg]);
 
-    // Simulate AI response
     setTimeout(() => {
       const aiMsg: ChatMessage = {
         id: crypto.randomUUID(),
@@ -107,7 +111,6 @@ function App() {
   const handleSwitchPhase = () => {
     if (projectPhase === 'brainstorm') {
       setProjectPhase('code');
-      // Generate todos from chat
       if (currentProject) {
         const todos: TodoItem[] = messages
           .filter(m => m.role === 'user')
@@ -130,19 +133,30 @@ function App() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-center"
+          className="text-center px-4"
         >
-          <h1 className="text-6xl font-bold text-white mb-4">
+          <h1 className="text-5xl md:text-6xl font-bold text-white mb-4">
             Nexus<span className="text-purple-400">AI</span>
           </h1>
-          <p className="text-xl text-gray-300 mb-8">
-            Intelligent App Factory — Build Anything
+          <p className="text-lg md:text-xl text-gray-300 mb-2">
+            Intelligent App Factory
           </p>
+          <p className="text-sm text-gray-500 mb-8 max-w-md mx-auto">
+            Build Android apps, Windows apps, and web apps — all from conversation.
+            100% free, unlimited, local-first.
+          </p>
+          <div className="flex flex-wrap justify-center gap-3 mb-8">
+            {['🧠 Persistent Memory', '🔥 CRUCIBLE Vetting', '🎤 Voice Chat', '📱 App Factory', '🪡 Needle AI', '🖥️ Sandbox Terminal'].map(feature => (
+              <span key={feature} className="px-3 py-1 bg-gray-800/50 border border-gray-700 rounded-full text-xs text-gray-400">
+                {feature}
+              </span>
+            ))}
+          </div>
           <button
             onClick={() => setShowAuth(true)}
             className="px-8 py-4 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-lg font-semibold transition-all hover:scale-105"
           >
-            Get Started
+            Get Started — It's Free
           </button>
         </motion.div>
         <AnimatePresence>
@@ -151,6 +165,35 @@ function App() {
       </div>
     );
   }
+
+  const renderPanel = () => {
+    switch (activePanel) {
+      case 'chat':
+        return <ChatPanel messages={messages} onSendMessage={handleSendMessage} projectPhase={projectPhase} todos={currentProject?.todos || []} />;
+      case 'preview':
+        return <PreviewPanel />;
+      case 'mind':
+        return <MindPanel memories={currentProject?.memories || []} />;
+      case 'terminal':
+        return <TerminalPanel />;
+      case 'projects':
+        return <ProjectManager onStartProject={handleStartProject} />;
+      case 'templates':
+        return <TemplateLibrary onCreateProject={handleStartProject} />;
+      case 'settings':
+        return <SettingsPanel />;
+      case 'build':
+        return <BuildPipeline />;
+      case 'ram':
+        return <RamGraphStatus />;
+      case 'voice':
+        return <VoiceConversation active={voiceActive} setActive={setVoiceActive} ttsEnabled={ttsEnabled} setTtsEnabled={setTtsEnabled} />;
+      case 'autocorrect':
+        return <AutocorrectPanel />;
+      default:
+        return <ChatPanel messages={messages} onSendMessage={handleSendMessage} projectPhase={projectPhase} todos={currentProject?.todos || []} />;
+    }
+  };
 
   return (
     <div className="h-screen flex bg-gray-900 text-white overflow-hidden">
@@ -175,8 +218,8 @@ function App() {
             {currentProject && (
               <div className="flex items-center gap-2">
                 <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                  projectPhase === 'brainstorm' 
-                    ? 'bg-blue-500/20 text-blue-300' 
+                  projectPhase === 'brainstorm'
+                    ? 'bg-blue-500/20 text-blue-300'
                     : 'bg-green-500/20 text-green-300'
                 }`}>
                   {projectPhase === 'brainstorm' ? '🧩 Brainstorm' : '💻 Code Mode'}
@@ -212,77 +255,15 @@ function App() {
         <div className="flex-1 flex overflow-hidden">
           <div className="flex-1 overflow-hidden">
             <AnimatePresence mode="wait">
-              {activePanel === 'chat' && (
-                <motion.div
-                  key="chat"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="h-full"
-                >
-                  <ChatPanel
-                    messages={messages}
-                    onSendMessage={handleSendMessage}
-                    projectPhase={projectPhase}
-                    todos={currentProject?.todos || []}
-                  />
-                </motion.div>
-              )}
-              {activePanel === 'preview' && (
-                <motion.div
-                  key="preview"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="h-full"
-                >
-                  <PreviewPanel />
-                </motion.div>
-              )}
-              {activePanel === 'mind' && (
-                <motion.div
-                  key="mind"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="h-full"
-                >
-                  <MindPanel memories={currentProject?.memories || []} />
-                </motion.div>
-              )}
-              {activePanel === 'terminal' && (
-                <motion.div
-                  key="terminal"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="h-full"
-                >
-                  <TerminalPanel />
-                </motion.div>
-              )}
-              {activePanel === 'projects' && (
-                <motion.div
-                  key="projects"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="h-full"
-                >
-                  <ProjectManager onStartProject={handleStartProject} />
-                </motion.div>
-              )}
-              {activePanel === 'templates' && (
-                <motion.div
-                  key="templates"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="h-full"
-                >
-                  <TemplateLibrary onCreateProject={handleStartProject} />
-                </motion.div>
-              )}
+              <motion.div
+                key={activePanel}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="h-full"
+              >
+                {renderPanel()}
+              </motion.div>
             </AnimatePresence>
           </div>
 
