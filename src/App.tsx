@@ -15,6 +15,7 @@ import BuildPipeline from './components/BuildPipeline';
 import RamGraphStatus from './components/RamGraphStatus';
 import VoiceConversation from './components/VoiceConversation';
 import AutocorrectPanel from './components/AutocorrectPanel';
+import { generateCode, generateResponse } from './utils/codeGenerator';
 
 export type PanelView = 'chat' | 'preview' | 'mind' | 'terminal' | 'projects' | 'templates' | 'settings' | 'build' | 'ram' | 'voice' | 'autocorrect';
 export type ProjectPhase = 'brainstorm' | 'code';
@@ -59,10 +60,13 @@ function App() {
   const [currentProject, setCurrentProject] = useState<Project | null>(null);
   const [projectPhase, setProjectPhase] = useState<ProjectPhase>('brainstorm');
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [generatedCode, setGeneratedCode] = useState('');
   const [voiceActive, setVoiceActive] = useState(false);
   const [ttsEnabled, setTtsEnabled] = useState(true);
   const [showVetting, setShowVetting] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [memories, setMemories] = useState<Memory[]>([]);
 
   const handleLogin = () => {
     setAuthMode('logged-in');
@@ -78,9 +82,11 @@ function App() {
     setAuthMode('none');
     setCurrentProject(null);
     setMessages([]);
+    setGeneratedCode('');
   };
 
   const handleSendMessage = (content: string) => {
+    // Add user message
     const userMsg: ChatMessage = {
       id: crypto.randomUUID(),
       role: 'user',
@@ -89,29 +95,54 @@ function App() {
     };
     setMessages(prev => [...prev, userMsg]);
 
+    // Generate real code from description
+    const code = generateCode(content);
+    setGeneratedCode(code);
+
+    // Generate AI response
     setTimeout(() => {
       const aiMsg: ChatMessage = {
         id: crypto.randomUUID(),
         role: 'assistant',
-        content: generateAIResponse(content),
+        content: generateResponse(content),
         timestamp: new Date(),
       };
       setMessages(prev => [...prev, aiMsg]);
-    }, 1000);
-  };
 
-  const generateAIResponse = (input: string): string => {
-    const responses = [
-      "I understand what you're looking for. Let me think through this using my RAM graph...\n\n🧠 **Working Memory Active**\n- Analyzing your request\n- Checking Mind section for relevant context\n- Mapping dependencies\n\nBased on what I see, here's my approach:\n1. First, let's clarify the requirements\n2. Then I'll generate the code structure\n3. We'll test it in the dummy terminal\n4. Finally, we'll build and deploy\n\nWhat would you like to adjust?",
-      "Great idea! Let me run this through the CRUCIBLE vetting process:\n\n🔥 **Steelman:** This approach has strong fundamentals...\n⚔️ **Skeptic:** Edge case to consider — what about error handling?\n🔧 **Pragmatist:** Timeline looks good with current resources\n🔄 **Contrarian:** Have we considered an alternative approach?\n\n**Verdict: 💎 DIAMOND** — This is solid. Let's proceed.\n\nI've also saved this decision to the Mind section for future reference.",
-      "I've detected a potential loop in my reasoning:\n\n🔄 **Loop Detected in RAM Graph:**\n- Step 1: Analyze component\n- Step 2: Check dependencies\n- Step 3: Back to Step 1\n\n**Finding alternate route...**\n\nNew path:\n- Step 1: Map all dependencies first\n- Step 2: Analyze each component with full context\n- Step 3: Generate optimized solution\n\nThis avoids the circular reasoning. Here's the updated plan...",
-    ];
-    return responses[Math.floor(Math.random() * responses.length)];
+      // Auto-switch to preview if not already there
+      if (activePanel === 'chat') {
+        // Keep on chat but user can switch
+      }
+    }, 800);
   };
 
   const handleStartProject = (project: Project) => {
     setCurrentProject(project);
+    setMessages([]);
+    setGeneratedCode('');
     setActivePanel('chat');
+  };
+
+  const handleCreateProject = (name: string) => {
+    const newProject: Project = {
+      id: crypto.randomUUID(),
+      name,
+      phase: 'brainstorm',
+      createdAt: new Date(),
+      todos: [],
+      memories: [],
+    };
+    setProjects(prev => [newProject, ...prev]);
+    handleStartProject(newProject);
+  };
+
+  const handleAddMemory = (memory: Omit<Memory, 'id' | 'createdAt'>) => {
+    const newMemory: Memory = {
+      ...memory,
+      id: crypto.randomUUID(),
+      createdAt: new Date(),
+    };
+    setMemories(prev => [newMemory, ...prev]);
   };
 
   const handleSwitchPhase = () => {
@@ -189,15 +220,23 @@ function App() {
   const renderPanel = () => {
     switch (activePanel) {
       case 'chat':
-        return <ChatPanel messages={messages} onSendMessage={handleSendMessage} projectPhase={projectPhase} todos={currentProject?.todos || []} />;
+        return (
+          <ChatPanel
+            messages={messages}
+            onSendMessage={handleSendMessage}
+            projectPhase={projectPhase}
+            todos={currentProject?.todos || []}
+            generatedCode={generatedCode}
+          />
+        );
       case 'preview':
-        return <PreviewPanel />;
+        return <PreviewPanel generatedCode={generatedCode} />;
       case 'mind':
-        return <MindPanel memories={currentProject?.memories || []} />;
+        return <MindPanel memories={memories} onAddMemory={handleAddMemory} />;
       case 'terminal':
         return <TerminalPanel />;
       case 'projects':
-        return <ProjectManager onStartProject={handleStartProject} />;
+        return <ProjectManager projects={projects} onStartProject={handleStartProject} onCreateProject={handleCreateProject} />;
       case 'templates':
         return <TemplateLibrary onCreateProject={handleStartProject} />;
       case 'settings':
@@ -211,13 +250,20 @@ function App() {
       case 'autocorrect':
         return <AutocorrectPanel />;
       default:
-        return <ChatPanel messages={messages} onSendMessage={handleSendMessage} projectPhase={projectPhase} todos={currentProject?.todos || []} />;
+        return (
+          <ChatPanel
+            messages={messages}
+            onSendMessage={handleSendMessage}
+            projectPhase={projectPhase}
+            todos={currentProject?.todos || []}
+            generatedCode={generatedCode}
+          />
+        );
     }
   };
 
   return (
     <div className="h-screen flex bg-gray-900 text-white overflow-hidden">
-      {/* Sidebar */}
       <Sidebar
         activePanel={activePanel}
         setActivePanel={setActivePanel}
@@ -228,7 +274,6 @@ function App() {
         authMode={authMode}
       />
 
-      {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Top Bar */}
         <div className="h-14 bg-gray-800 border-b border-gray-700 flex items-center justify-between px-4">
@@ -293,7 +338,6 @@ function App() {
             </AnimatePresence>
           </div>
 
-          {/* Vetting Panel (side panel) */}
           <AnimatePresence>
             {showVetting && (
               <motion.div
@@ -309,7 +353,6 @@ function App() {
         </div>
       </div>
 
-      {/* Auth Modal */}
       <AnimatePresence>
         {showAuth && <AuthModal onLogin={handleLogin} onGuest={handleGuest} onClose={() => setShowAuth(false)} />}
       </AnimatePresence>

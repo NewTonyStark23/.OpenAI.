@@ -14,7 +14,6 @@ export default function VoiceConversation({ active, setActive, ttsEnabled, setTt
   const [timeRemaining, setTimeRemaining] = useState(60);
   const [transcript, setTranscript] = useState('');
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const [detectedLanguage, setDetectedLanguage] = useState('en');
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
@@ -52,26 +51,6 @@ export default function VoiceConversation({ active, setActive, ttsEnabled, setTt
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  // Simulate transcription
-  useEffect(() => {
-    if (listeningWindow) {
-      const timeout = setTimeout(() => {
-        setTranscript('Build me a fitness tracking app with workout logging...');
-        setDetectedLanguage('en');
-      }, 3000);
-      return () => clearTimeout(timeout);
-    }
-  }, [listeningWindow]);
-
-  // Simulate AI speaking
-  useEffect(() => {
-    if (transcript && !listeningWindow) {
-      setIsSpeaking(true);
-      const timeout = setTimeout(() => setIsSpeaking(false), 4000);
-      return () => clearTimeout(timeout);
-    }
-  }, [transcript, listeningWindow]);
-
   return (
     <div className="h-full flex flex-col bg-gray-900">
       {/* Header */}
@@ -103,17 +82,17 @@ export default function VoiceConversation({ active, setActive, ttsEnabled, setTt
         <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          onClick={() => setActive(!active)}
+          onClick={() => active ? setActive(false) : handleWakeWord()}
           className={`w-32 h-32 rounded-full flex items-center justify-center transition-all ${
-            active
+            active || listeningWindow
               ? 'bg-red-600/20 border-2 border-red-500 shadow-lg shadow-red-500/20'
               : 'bg-gray-800 border-2 border-gray-600 hover:border-purple-500'
           }`}
         >
-          {active ? (
+          {active || listeningWindow ? (
             <div className="text-center">
               <MicOff size={32} className="text-red-400 mx-auto mb-1" />
-              <span className="text-xs text-red-300">Listening</span>
+              <span className="text-xs text-red-300">{listeningWindow ? 'Listening' : 'Active'}</span>
             </div>
           ) : (
             <div className="text-center">
@@ -124,7 +103,11 @@ export default function VoiceConversation({ active, setActive, ttsEnabled, setTt
         </motion.button>
 
         <p className="text-sm text-gray-400 mt-4">
-          {active ? 'Say "Hey OpenAI" to start talking' : 'Click to enable wake word detection'}
+          {listeningWindow
+            ? 'Listening... speak now'
+            : active
+            ? 'Say "Hey OpenAI" to start talking'
+            : 'Click to enable wake word detection'}
         </p>
 
         {/* Listening Window */}
@@ -154,7 +137,7 @@ export default function VoiceConversation({ active, setActive, ttsEnabled, setTt
                     <motion.div
                       key={i}
                       animate={{
-                        height: listeningWindow ? [20, 40, 20] : 20,
+                        height: [20, 40, 20],
                       }}
                       transition={{
                         duration: 0.5,
@@ -167,15 +150,14 @@ export default function VoiceConversation({ active, setActive, ttsEnabled, setTt
                   ))}
                 </div>
 
-                {/* Transcript */}
-                {transcript && (
+                {/* Transcript Area */}
+                {transcript ? (
                   <div className="bg-gray-700/50 rounded-lg p-3 mb-4">
                     <p className="text-sm text-gray-300">{transcript}</p>
-                    <div className="flex items-center gap-2 mt-2 text-xs text-gray-500">
-                      <span>Language: {detectedLanguage.toUpperCase()}</span>
-                      <span>•</span>
-                      <span>Auto-translated to English</span>
-                    </div>
+                  </div>
+                ) : (
+                  <div className="bg-gray-700/50 rounded-lg p-3 mb-4 text-center">
+                    <p className="text-sm text-gray-500">Waiting for speech...</p>
                   </div>
                 )}
 
@@ -200,7 +182,7 @@ export default function VoiceConversation({ active, setActive, ttsEnabled, setTt
               className="mt-6 flex items-center gap-2 text-sm text-purple-400"
             >
               <Volume2 size={16} className="animate-pulse" />
-              <span>AI is speaking... (Bruno voice)</span>
+              <span>AI is speaking...</span>
             </motion.div>
           )}
         </AnimatePresence>

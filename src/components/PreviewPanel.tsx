@@ -1,10 +1,38 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Power, AlertTriangle, RefreshCw, Download, Smartphone, Monitor } from 'lucide-react';
+import { Power, RefreshCw, Download, Smartphone, Monitor, Globe, Copy, ExternalLink, Code } from 'lucide-react';
 
-export default function PreviewPanel() {
-  const [isRunning, setIsRunning] = useState(false);
+interface PreviewPanelProps {
+  generatedCode: string;
+}
+
+export default function PreviewPanel({ generatedCode }: PreviewPanelProps) {
   const [previewMode, setPreviewMode] = useState<'web' | 'android' | 'windows'>('web');
+  const [isRunning, setIsRunning] = useState(false);
+
+  const hasCode = generatedCode.trim().length > 0;
+
+  const handleDownload = () => {
+    if (!generatedCode) return;
+    const blob = new Blob([generatedCode], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'index.html';
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(generatedCode);
+  };
+
+  const handleOpenNew = () => {
+    if (!generatedCode) return;
+    const blob = new Blob([generatedCode], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    window.open(url, '_blank');
+  };
 
   return (
     <div className="h-full flex flex-col bg-gray-900">
@@ -17,7 +45,8 @@ export default function PreviewPanel() {
               previewMode === 'web' ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-300'
             }`}
           >
-            🌐 Web
+            <Globe size={12} className="inline mr-1" />
+            Web
           </button>
           <button
             onClick={() => setPreviewMode('android')}
@@ -39,6 +68,31 @@ export default function PreviewPanel() {
           </button>
         </div>
         <div className="flex items-center gap-2">
+          {hasCode && (
+            <>
+              <button
+                onClick={handleCopy}
+                className="p-1.5 hover:bg-gray-700 rounded-lg transition-colors"
+                title="Copy HTML"
+              >
+                <Copy size={14} />
+              </button>
+              <button
+                onClick={handleOpenNew}
+                className="p-1.5 hover:bg-gray-700 rounded-lg transition-colors"
+                title="Open in new tab"
+              >
+                <ExternalLink size={14} />
+              </button>
+              <button
+                onClick={handleDownload}
+                className="p-1.5 hover:bg-gray-700 rounded-lg transition-colors"
+                title="Download HTML"
+              >
+                <Download size={14} />
+              </button>
+            </>
+          )}
           <button
             onClick={() => setIsRunning(!isRunning)}
             className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
@@ -46,74 +100,85 @@ export default function PreviewPanel() {
             } text-white`}
           >
             <Power size={12} className="inline mr-1" />
-            {isRunning ? 'Kill' : 'Run'}
-          </button>
-          <button className="p-1.5 hover:bg-gray-700 rounded-lg transition-colors">
-            <RefreshCw size={14} />
-          </button>
-          <button className="p-1.5 hover:bg-gray-700 rounded-lg transition-colors">
-            <Download size={14} />
+            {isRunning ? 'Stop' : 'Run'}
           </button>
         </div>
       </div>
 
       {/* Preview Area */}
-      <div className="flex-1 flex items-center justify-center p-8">
-        {isRunning ? (
+      <div className="flex-1 flex items-center justify-center p-4 overflow-hidden bg-gray-950">
+        {!hasCode ? (
+          <div className="text-center max-w-md">
+            <div className="w-24 h-24 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Code size={40} className="text-gray-600" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-300 mb-2">No Code Generated Yet</h3>
+            <p className="text-gray-500 text-sm mb-4">
+              Describe what you want to build in the Chat panel.
+              Code will appear here in real-time as a live preview.
+            </p>
+            <div className="flex items-center gap-2 justify-center text-xs text-gray-600">
+              <span className="px-2 py-1 bg-gray-800 rounded">💬 Chat → Code</span>
+              <span>→</span>
+              <span className="px-2 py-1 bg-gray-800 rounded">👁️ Live Preview</span>
+            </div>
+          </div>
+        ) : isRunning ? (
           <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
+            initial={{ scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            className={`bg-white rounded-lg shadow-2xl overflow-hidden ${
-              previewMode === 'android' ? 'w-[375px] h-[667px] rounded-[2rem] border-4 border-gray-700' :
-              previewMode === 'windows' ? 'w-[800px] h-[500px] border border-gray-600' :
-              'w-full h-full max-w-4xl'
+            className={`overflow-hidden bg-white ${
+              previewMode === 'android'
+                ? 'w-[375px] h-[667px] rounded-[2rem] border-4 border-gray-700 shadow-2xl'
+                : previewMode === 'windows'
+                ? 'w-full max-w-[900px] h-full max-h-[600px] border border-gray-600 rounded-lg overflow-hidden'
+                : 'w-full h-full rounded-lg overflow-hidden border border-gray-700'
             }`}
           >
-            {/* Device Frame for Android */}
+            {/* Android notch */}
             {previewMode === 'android' && (
-              <div className="h-6 bg-black flex items-center justify-center">
-                <div className="w-20 h-3 bg-gray-800 rounded-full" />
+              <div className="h-7 bg-black flex items-center justify-center rounded-t-[1.5rem]">
+                <div className="w-16 h-3 bg-gray-800 rounded-full" />
               </div>
             )}
-            {/* Windows Title Bar */}
+            {/* Windows title bar */}
             {previewMode === 'windows' && (
               <div className="h-8 bg-gray-100 flex items-center justify-between px-3 border-b">
-                <span className="text-xs text-gray-600">My App</span>
-                <div className="flex gap-1">
+                <span className="text-xs text-gray-600">Generated App</span>
+                <div className="flex gap-1.5">
                   <div className="w-3 h-3 bg-gray-300 rounded-full" />
                   <div className="w-3 h-3 bg-gray-300 rounded-full" />
                   <div className="w-3 h-3 bg-red-400 rounded-full" />
                 </div>
               </div>
             )}
-            {/* App Content Placeholder */}
-            <div className="flex-1 p-6 bg-gradient-to-br from-purple-50 to-blue-50 h-full">
-              <div className="space-y-4">
-                <div className="h-8 bg-purple-200 rounded w-3/4" />
-                <div className="h-4 bg-gray-200 rounded w-full" />
-                <div className="h-4 bg-gray-200 rounded w-5/6" />
-                <div className="mt-6 grid grid-cols-2 gap-3">
-                  <div className="h-24 bg-purple-100 rounded-lg" />
-                  <div className="h-24 bg-blue-100 rounded-lg" />
-                </div>
-                <div className="h-10 bg-purple-600 rounded-lg w-32 mt-4" />
-              </div>
-            </div>
+            {/* Live iframe */}
+            <iframe
+              srcDoc={generatedCode}
+              className="w-full border-0"
+              style={{
+                height: previewMode === 'android' ? 'calc(100% - 28px)' :
+                        previewMode === 'windows' ? 'calc(100% - 32px)' : '100%',
+              }}
+              title="Preview"
+              sandbox="allow-scripts allow-same-origin"
+            />
           </motion.div>
         ) : (
           <div className="text-center">
-            <div className="w-24 h-24 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
-              <AlertTriangle size={40} className="text-yellow-500" />
+            <div className="w-20 h-20 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Power size={32} className="text-gray-600" />
             </div>
-            <h3 className="text-lg font-semibold text-gray-300 mb-2">Preview Not Running</h3>
+            <h3 className="text-lg font-semibold text-gray-300 mb-2">Preview Stopped</h3>
             <p className="text-gray-500 text-sm mb-4">
-              Click "Run" to start the preview in a sandboxed environment
+              Code is ready. Click "Run" to render the preview.
             </p>
-            <div className="flex items-center gap-2 justify-center text-xs text-gray-600">
-              <span className="px-2 py-1 bg-gray-800 rounded">🔒 Sandboxed</span>
-              <span className="px-2 py-1 bg-gray-800 rounded">⚡ Kill Switch Ready</span>
-              <span className="px-2 py-1 bg-gray-800 rounded">🖥️ Hardware Adaptive</span>
-            </div>
+            <button
+              onClick={() => setIsRunning(true)}
+              className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg text-sm font-medium transition-colors"
+            >
+              ▶ Run Preview
+            </button>
           </div>
         )}
       </div>
@@ -121,18 +186,25 @@ export default function PreviewPanel() {
       {/* Status Bar */}
       <div className="h-8 bg-gray-800 border-t border-gray-700 flex items-center justify-between px-4">
         <div className="flex items-center gap-3 text-xs">
-          <span className={isRunning ? 'text-green-400' : 'text-gray-500'}>
-            {isRunning ? '● Running' : '○ Stopped'}
+          <span className={hasCode && isRunning ? 'text-green-400' : 'text-gray-500'}>
+            {hasCode && isRunning ? '● Live' : hasCode ? '● Ready' : '○ No code'}
           </span>
           <span className="text-gray-500">|</span>
           <span className="text-gray-400">
-            {previewMode === 'android' ? 'Android Emulator' : 
-             previewMode === 'windows' ? 'Windows Preview' : 'Web Browser'}
+            {previewMode === 'android' ? 'Android (375×667)' :
+             previewMode === 'windows' ? 'Windows Desktop' : 'Web (Full Width)'}
           </span>
+          {hasCode && (
+            <>
+              <span className="text-gray-500">|</span>
+              <span className="text-gray-400">{generatedCode.length.toLocaleString()} chars</span>
+            </>
+          )}
         </div>
         <div className="flex items-center gap-3 text-xs text-gray-500">
-          <span>RAM: 2.4GB / 8GB</span>
-          <span>CPU: 12%</span>
+          <span>iframe sandboxed</span>
+          <span>•</span>
+          <span>scripts allowed</span>
         </div>
       </div>
     </div>

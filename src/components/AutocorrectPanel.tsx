@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Wand2, AlertTriangle, CheckCircle, Settings, Code, Zap, Shield } from 'lucide-react';
+import { Wand2, Settings, Shield, Zap, AlertTriangle } from 'lucide-react';
 
 interface AutocorrectRule {
   id: string;
@@ -9,17 +8,6 @@ interface AutocorrectRule {
   enabled: boolean;
   severity: 'error' | 'warning' | 'info';
   description: string;
-}
-
-interface DetectedIssue {
-  id: string;
-  rule: string;
-  message: string;
-  severity: 'error' | 'warning' | 'info';
-  line: number;
-  file: string;
-  suggestion: string;
-  autoFixed: boolean;
 }
 
 export default function AutocorrectPanel() {
@@ -34,50 +22,8 @@ export default function AutocorrectPanel() {
     { id: '6', name: 'Type Safety', language: 'TypeScript', enabled: true, severity: 'error', description: 'Avoid any types, use proper typing' },
   ]);
 
-  const [detectedIssues] = useState<DetectedIssue[]>([
-    {
-      id: '1',
-      rule: 'Missing Error Boundary',
-      message: 'UserProfile component lacks error boundary',
-      severity: 'error',
-      line: 42,
-      file: 'src/components/UserProfile.tsx',
-      suggestion: 'Wrap with <ErrorBoundary> component',
-      autoFixed: true,
-    },
-    {
-      id: '2',
-      rule: 'Missing Key Prop',
-      message: 'List item in map() missing key',
-      severity: 'warning',
-      line: 87,
-      file: 'src/components/TodoList.tsx',
-      suggestion: 'Add key={item.id} to list element',
-      autoFixed: true,
-    },
-    {
-      id: '3',
-      rule: 'Console.log Left',
-      message: 'Debug statement found',
-      severity: 'info',
-      line: 15,
-      file: 'src/utils/api.ts',
-      suggestion: 'Remove console.log("debug:", data)',
-      autoFixed: false,
-    },
-  ]);
-
   const toggleRule = (id: string) => {
     setRules(prev => prev.map(r => r.id === id ? { ...r, enabled: !r.enabled } : r));
-  };
-
-  const getSeverityColor = (severity: string) => {
-    switch (severity) {
-      case 'error': return 'text-red-400 bg-red-500/10 border-red-500/30';
-      case 'warning': return 'text-yellow-400 bg-yellow-500/10 border-yellow-500/30';
-      case 'info': return 'text-blue-400 bg-blue-500/10 border-blue-500/30';
-      default: return 'text-gray-400 bg-gray-500/10 border-gray-500/30';
-    }
   };
 
   return (
@@ -108,59 +54,26 @@ export default function AutocorrectPanel() {
       {/* Stats */}
       <div className="px-4 py-3 border-b border-gray-700 grid grid-cols-3 gap-3">
         <div className="text-center">
-          <p className="text-lg font-bold text-red-400">
-            {detectedIssues.filter(i => i.severity === 'error').length}
-          </p>
+          <p className="text-lg font-bold text-red-400">0</p>
           <p className="text-xs text-gray-500">Errors</p>
         </div>
         <div className="text-center">
-          <p className="text-lg font-bold text-yellow-400">
-            {detectedIssues.filter(i => i.severity === 'warning').length}
-          </p>
+          <p className="text-lg font-bold text-yellow-400">0</p>
           <p className="text-xs text-gray-500">Warnings</p>
         </div>
         <div className="text-center">
-          <p className="text-lg font-bold text-green-400">
-            {detectedIssues.filter(i => i.autoFixed).length}
-          </p>
+          <p className="text-lg font-bold text-green-400">0</p>
           <p className="text-xs text-gray-500">Auto-fixed</p>
         </div>
       </div>
 
-      {/* Detected Issues */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-3">
-        <h4 className="text-sm font-medium text-gray-300 mb-2">Detected Issues</h4>
-        {detectedIssues.map(issue => (
-          <motion.div
-            key={issue.id}
-            initial={{ opacity: 0, x: -10 }}
-            animate={{ opacity: 1, x: 0 }}
-            className={`p-3 rounded-lg border ${getSeverityColor(issue.severity)}`}
-          >
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-1">
-                  {issue.severity === 'error' ? <AlertTriangle size={12} /> :
-                   issue.severity === 'warning' ? <AlertTriangle size={12} /> :
-                   <CheckCircle size={12} />}
-                  <span className="text-xs font-medium">{issue.rule}</span>
-                </div>
-                <p className="text-sm">{issue.message}</p>
-                <p className="text-xs text-gray-500 mt-1">
-                  {issue.file}:{issue.line}
-                </p>
-                <p className="text-xs text-green-400 mt-1">
-                  💡 {issue.suggestion}
-                </p>
-              </div>
-              {issue.autoFixed && (
-                <span className="px-2 py-0.5 bg-green-500/20 rounded text-xs text-green-300">
-                  Fixed ✓
-                </span>
-              )}
-            </div>
-          </motion.div>
-        ))}
+      {/* Empty State */}
+      <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
+        <AlertTriangle size={48} className="text-gray-600 mb-4" />
+        <h3 className="text-lg font-semibold text-gray-400 mb-2">No Issues Detected</h3>
+        <p className="text-sm text-gray-500 max-w-sm">
+          Autocorrect will scan generated code for errors and warnings. Issues will appear here as code is generated.
+        </p>
       </div>
 
       {/* Rules Section */}

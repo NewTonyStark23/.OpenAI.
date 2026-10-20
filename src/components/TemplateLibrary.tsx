@@ -44,22 +44,6 @@ export default function TemplateLibrary({ onCreateProject }: TemplateLibraryProp
         </p>
       </div>
 
-      {/* Custom App Button */}
-      <motion.button
-        whileHover={{ scale: 1.02 }}
-        className="mb-6 w-full p-6 bg-gradient-to-r from-purple-600/20 to-blue-600/20 border border-purple-500/30 rounded-xl text-left hover:border-purple-500/60 transition-all"
-      >
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 bg-purple-600/30 rounded-lg flex items-center justify-center">
-            <Layout size={24} className="text-purple-300" />
-          </div>
-          <div>
-            <h3 className="font-semibold text-white">Custom App</h3>
-            <p className="text-sm text-gray-400">Start from scratch — describe what you want to build</p>
-          </div>
-        </div>
-      </motion.button>
-
       {/* Mobile/Windows Templates */}
       <div className="mb-4 flex items-center gap-2">
         <Smartphone size={16} className="text-green-400" />

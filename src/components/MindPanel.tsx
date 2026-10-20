@@ -5,53 +5,18 @@ import type { Memory } from '../App';
 
 interface MindPanelProps {
   memories: Memory[];
+  onAddMemory: (memory: Omit<Memory, 'id' | 'createdAt'>) => void;
 }
 
-const defaultMemories: Memory[] = [
-  {
-    id: '1',
-    type: 'preference',
-    content: 'User prefers dark mode for all applications',
-    tags: ['design', 'ui'],
-    createdAt: new Date('2026-01-15'),
-  },
-  {
-    id: '2',
-    type: 'decision',
-    content: 'Using React Native over Flutter for cross-platform apps',
-    tags: ['framework', 'architecture'],
-    createdAt: new Date('2026-01-20'),
-  },
-  {
-    id: '3',
-    type: 'requirement',
-    content: 'All apps must support offline-first with sync when online',
-    tags: ['backend', 'feature'],
-    createdAt: new Date('2026-02-01'),
-  },
-  {
-    id: '4',
-    type: 'lesson',
-    content: 'Always add error boundaries in React components',
-    tags: ['react', 'best-practice'],
-    createdAt: new Date('2026-02-10'),
-  },
-  {
-    id: '5',
-    type: 'preference',
-    content: 'User prefers minimal UI with accent colors',
-    tags: ['design', 'style'],
-    createdAt: new Date('2026-02-15'),
-  },
-];
-
-export default function MindPanel({ memories: propMemories }: MindPanelProps) {
+export default function MindPanel({ memories, onAddMemory }: MindPanelProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const [showAddMemory, setShowAddMemory] = useState(false);
+  const [newMemoryContent, setNewMemoryContent] = useState('');
+  const [newMemoryType, setNewMemoryType] = useState<Memory['type']>('preference');
+  const [newMemoryTags, setNewMemoryTags] = useState('');
   const [repoUrl, setRepoUrl] = useState('');
 
-  const memories = propMemories.length > 0 ? propMemories : defaultMemories;
   const allTags = [...new Set(memories.flatMap(m => m.tags))];
 
   const filteredMemories = memories.filter(m => {
@@ -59,6 +24,19 @@ export default function MindPanel({ memories: propMemories }: MindPanelProps) {
     const matchesTag = !selectedTag || m.tags.includes(selectedTag);
     return matchesSearch && matchesTag;
   });
+
+  const handleAddMemory = () => {
+    if (newMemoryContent.trim()) {
+      onAddMemory({
+        type: newMemoryType,
+        content: newMemoryContent.trim(),
+        tags: newMemoryTags.split(',').map(t => t.trim()).filter(Boolean),
+      });
+      setNewMemoryContent('');
+      setNewMemoryTags('');
+      setShowAddMemory(false);
+    }
+  };
 
   const getTypeIcon = (type: Memory['type']) => {
     switch (type) {
@@ -113,21 +91,23 @@ export default function MindPanel({ memories: propMemories }: MindPanelProps) {
         </div>
 
         {/* Tags */}
-        <div className="flex flex-wrap gap-1 mt-3">
-          {allTags.map(tag => (
-            <button
-              key={tag}
-              onClick={() => setSelectedTag(selectedTag === tag ? null : tag)}
-              className={`px-2 py-0.5 rounded-full text-xs transition-colors ${
-                selectedTag === tag
-                  ? 'bg-purple-600 text-white'
-                  : 'bg-gray-700 text-gray-400 hover:bg-gray-600'
-              }`}
-            >
-              #{tag}
-            </button>
-          ))}
-        </div>
+        {allTags.length > 0 && (
+          <div className="flex flex-wrap gap-1 mt-3">
+            {allTags.map(tag => (
+              <button
+                key={tag}
+                onClick={() => setSelectedTag(selectedTag === tag ? null : tag)}
+                className={`px-2 py-0.5 rounded-full text-xs transition-colors ${
+                  selectedTag === tag
+                    ? 'bg-purple-600 text-white'
+                    : 'bg-gray-700 text-gray-400 hover:bg-gray-600'
+                }`}
+              >
+                #{tag}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Add Memory / Import Repo */}
@@ -139,13 +119,53 @@ export default function MindPanel({ memories: propMemories }: MindPanelProps) {
         >
           <div className="space-y-3">
             <div>
-              <label className="text-xs text-gray-400 mb-1 block">Add Memory</label>
+              <label className="text-xs text-gray-400 mb-1 block">Type</label>
+              <select
+                value={newMemoryType}
+                onChange={e => setNewMemoryType(e.target.value as Memory['type'])}
+                className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:border-purple-500"
+              >
+                <option value="preference">⭐ Preference</option>
+                <option value="decision">✅ Decision</option>
+                <option value="requirement">📋 Requirement</option>
+                <option value="lesson">💡 Lesson</option>
+              </select>
+            </div>
+            <div>
+              <label className="text-xs text-gray-400 mb-1 block">Memory</label>
               <textarea
+                value={newMemoryContent}
+                onChange={e => setNewMemoryContent(e.target.value)}
                 placeholder="What should I remember?"
                 className="w-full bg-gray-700 border border-gray-600 rounded-lg p-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 resize-none h-20"
               />
             </div>
             <div>
+              <label className="text-xs text-gray-400 mb-1 block">Tags (comma separated)</label>
+              <input
+                type="text"
+                value={newMemoryTags}
+                onChange={e => setNewMemoryTags(e.target.value)}
+                placeholder="design, ui, preference"
+                className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-1.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-purple-500"
+              />
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={handleAddMemory}
+                disabled={!newMemoryContent.trim()}
+                className="px-4 py-1.5 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-700 disabled:text-gray-500 rounded-lg text-sm font-medium transition-colors"
+              >
+                Save Memory
+              </button>
+              <button
+                onClick={() => setShowAddMemory(false)}
+                className="px-4 py-1.5 bg-gray-700 hover:bg-gray-600 rounded-lg text-sm transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+            <div className="pt-3 border-t border-gray-700">
               <label className="text-xs text-gray-400 mb-1 block flex items-center gap-1">
                 <GitBranch size={12} /> Import Repo as Mind
               </label>
@@ -167,54 +187,82 @@ export default function MindPanel({ memories: propMemories }: MindPanelProps) {
       )}
 
       {/* Memory Stats */}
-      <div className="px-4 py-2 border-b border-gray-700 flex items-center gap-4 text-xs text-gray-500">
-        <span className="flex items-center gap-1">
-          <Zap size={12} className="text-yellow-400" />
-          {memories.length} atomic memories
-        </span>
-        <span className="flex items-center gap-1">
-          <Tag size={12} className="text-blue-400" />
-          {allTags.length} tags
-        </span>
-        <span className="flex items-center gap-1">
-          <GitBranch size={12} className="text-green-400" />
-          Graph connected
-        </span>
-      </div>
+      {memories.length > 0 && (
+        <div className="px-4 py-2 border-b border-gray-700 flex items-center gap-4 text-xs text-gray-500">
+          <span className="flex items-center gap-1">
+            <Zap size={12} className="text-yellow-400" />
+            {memories.length} atomic memories
+          </span>
+          <span className="flex items-center gap-1">
+            <Tag size={12} className="text-blue-400" />
+            {allTags.length} tags
+          </span>
+          <span className="flex items-center gap-1">
+            <GitBranch size={12} className="text-green-400" />
+            Graph connected
+          </span>
+        </div>
+      )}
 
       {/* Memories List */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-3">
-        {filteredMemories.map(memory => (
-          <motion.div
-            key={memory.id}
-            initial={{ opacity: 0, x: -10 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="bg-gray-800 rounded-lg p-3 border border-gray-700 hover:border-gray-600 transition-colors"
-          >
-            <div className="flex items-start gap-2">
-              <span className="text-lg">{getTypeIcon(memory.type)}</span>
-              <div className="flex-1">
-                <p className="text-sm text-gray-200">{memory.content}</p>
-                <div className="flex items-center gap-2 mt-2">
-                  <span className={`text-xs ${getTypeColor(memory.type)}`}>
-                    {memory.type}
-                  </span>
-                  <span className="text-xs text-gray-600">•</span>
-                  <span className="text-xs text-gray-500">
-                    {memory.createdAt.toLocaleDateString()}
-                  </span>
+      <div className="flex-1 overflow-y-auto p-4">
+        {filteredMemories.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-full text-center">
+            <Brain size={40} className="text-gray-600 mb-3" />
+            <h3 className="text-lg font-semibold text-gray-400 mb-2">
+              {memories.length === 0 ? 'Mind is Empty' : 'No Matches'}
+            </h3>
+            <p className="text-sm text-gray-500 max-w-xs">
+              {memories.length === 0
+                ? 'Add memories manually or they\'ll be saved automatically as we work together.'
+                : 'Try a different search or tag.'}
+            </p>
+            {memories.length === 0 && (
+              <button
+                onClick={() => setShowAddMemory(true)}
+                className="mt-4 px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg text-sm font-medium transition-colors"
+              >
+                + Add First Memory
+              </button>
+            )}
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {filteredMemories.map(memory => (
+              <motion.div
+                key={memory.id}
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="bg-gray-800 rounded-lg p-3 border border-gray-700 hover:border-gray-600 transition-colors"
+              >
+                <div className="flex items-start gap-2">
+                  <span className="text-lg">{getTypeIcon(memory.type)}</span>
+                  <div className="flex-1">
+                    <p className="text-sm text-gray-200">{memory.content}</p>
+                    <div className="flex items-center gap-2 mt-2">
+                      <span className={`text-xs ${getTypeColor(memory.type)}`}>
+                        {memory.type}
+                      </span>
+                      <span className="text-xs text-gray-600">•</span>
+                      <span className="text-xs text-gray-500">
+                        {memory.createdAt.toLocaleDateString()}
+                      </span>
+                    </div>
+                    {memory.tags.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-2">
+                        {memory.tags.map(tag => (
+                          <span key={tag} className="px-1.5 py-0.5 bg-gray-700 rounded text-xs text-gray-400">
+                            #{tag}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
-                <div className="flex flex-wrap gap-1 mt-2">
-                  {memory.tags.map(tag => (
-                    <span key={tag} className="px-1.5 py-0.5 bg-gray-700 rounded text-xs text-gray-400">
-                      #{tag}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        ))}
+              </motion.div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

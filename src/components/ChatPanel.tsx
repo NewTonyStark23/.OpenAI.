@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Send, CheckCircle, Clock, Loader2 } from 'lucide-react';
+import { Send, Code, Eye, Smartphone, Monitor } from 'lucide-react';
 import type { ChatMessage, ProjectPhase, TodoItem } from '../App';
 
 interface ChatPanelProps {
@@ -8,10 +8,12 @@ interface ChatPanelProps {
   onSendMessage: (content: string) => void;
   projectPhase: ProjectPhase;
   todos: TodoItem[];
+  generatedCode: string;
 }
 
-export default function ChatPanel({ messages, onSendMessage, projectPhase, todos }: ChatPanelProps) {
+export default function ChatPanel({ messages, onSendMessage, projectPhase, todos, generatedCode }: ChatPanelProps) {
   const [input, setInput] = useState('');
+  const [showCode, setShowCode] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -40,15 +42,15 @@ export default function ChatPanel({ messages, onSendMessage, projectPhase, todos
             </h3>
             <p className="text-gray-400 max-w-md">
               {projectPhase === 'brainstorm'
-                ? 'Describe what you want to build. We\'ll explore ideas together, no limits.'
-                : 'I\'m generating code based on our brainstorm. Watch the progress below.'}
+                ? 'Describe what you want to build. Your code will appear in the Preview panel in real-time.'
+                : 'I\'m generating code based on our brainstorm. Watch the Preview panel for live output.'}
             </p>
             <div className="mt-6 grid grid-cols-2 gap-3 max-w-lg">
-              {['Build a fitness app', 'Create a todo list', 'Design a portfolio', 'Make a chat app'].map(suggestion => (
+              {['Build a landing page with hero section', 'Create a todo list app', 'Design a portfolio site', 'Make a login form'].map(suggestion => (
                 <button
                   key={suggestion}
                   onClick={() => onSendMessage(suggestion)}
-                  className="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg text-sm text-gray-300 transition-colors"
+                  className="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg text-sm text-gray-300 transition-colors text-left"
                 >
                   {suggestion}
                 </button>
@@ -81,26 +83,24 @@ export default function ChatPanel({ messages, onSendMessage, projectPhase, todos
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Todo List (in Code Mode) */}
-      {projectPhase === 'code' && todos.length > 0 && (
-        <div className="border-t border-gray-700 p-4 bg-gray-800/50">
-          <h4 className="text-sm font-semibold text-gray-300 mb-2">📋 Progress</h4>
-          <div className="space-y-1 max-h-32 overflow-y-auto">
-            {todos.map(todo => (
-              <div key={todo.id} className="flex items-center gap-2 text-xs">
-                {todo.status === 'done' ? (
-                  <CheckCircle size={14} className="text-green-400" />
-                ) : todo.status === 'in-progress' ? (
-                  <Loader2 size={14} className="text-yellow-400 animate-spin" />
-                ) : (
-                  <Clock size={14} className="text-gray-500" />
-                )}
-                <span className={todo.status === 'done' ? 'text-gray-500 line-through' : 'text-gray-300'}>
-                  {todo.order}. {todo.text}
-                </span>
-              </div>
-            ))}
-          </div>
+      {/* Generated Code Toggle */}
+      {generatedCode && (
+        <div className="border-t border-gray-700">
+          <button
+            onClick={() => setShowCode(!showCode)}
+            className="w-full px-4 py-2 flex items-center justify-between text-sm text-gray-400 hover:bg-gray-800 transition-colors"
+          >
+            <span className="flex items-center gap-2">
+              <Code size={14} />
+              Generated Code ({generatedCode.length} chars)
+            </span>
+            <span>{showCode ? '▼' : '▲'}</span>
+          </button>
+          {showCode && (
+            <div className="max-h-48 overflow-y-auto p-4 bg-black/50">
+              <pre className="text-xs text-green-400 font-mono whitespace-pre-wrap">{generatedCode}</pre>
+            </div>
+          )}
         </div>
       )}
 
@@ -111,8 +111,8 @@ export default function ChatPanel({ messages, onSendMessage, projectPhase, todos
             type="text"
             value={input}
             onChange={e => setInput(e.target.value)}
-            placeholder={projectPhase === 'brainstorm' 
-              ? 'Describe what you want to build...' 
+            placeholder={projectPhase === 'brainstorm'
+              ? 'Describe what you want to build...'
               : 'Request changes or updates...'}
             className="flex-1 bg-gray-800 border border-gray-600 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 transition-colors"
           />
@@ -126,7 +126,7 @@ export default function ChatPanel({ messages, onSendMessage, projectPhase, todos
         </form>
         <div className="flex items-center justify-between mt-2">
           <span className="text-xs text-gray-500">
-            🧠 Unlimited conversation • No caps • No tiers
+            🧠 Unlimited • No caps • Code renders in Preview →
           </span>
           <span className="text-xs text-gray-500">
             Auto-detect language • Mirror response
