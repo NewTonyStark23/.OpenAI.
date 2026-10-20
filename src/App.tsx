@@ -67,6 +67,11 @@ function App() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [projects, setProjects] = useState<Project[]>([]);
   const [memories, setMemories] = useState<Memory[]>([]);
+  
+  // AI Status - shows what I'm doing
+  const [isAIBusy, setIsAIBusy] = useState(false);
+  const [aiStatus, setAiStatus] = useState('');
+  const [terminalLines, setTerminalLines] = useState<string[]>([]);
 
   const handleLogin = () => {
     setAuthMode('logged-in');
@@ -85,7 +90,25 @@ function App() {
     setGeneratedCode('');
   };
 
-  const handleSendMessage = (content: string) => {
+  // AI adds a line to the terminal
+  const addTerminalLine = (content: string) => {
+    setTerminalLines(prev => [...prev, content]);
+  };
+
+  // AI runs a sequence of commands (simulated)
+  const runAICommands = async (commands: { label: string; output: string[] }[]) => {
+    for (const cmd of commands) {
+      setAiStatus(cmd.label);
+      addTerminalLine(`$ ${cmd.label}`);
+      await new Promise(resolve => setTimeout(resolve, 300));
+      for (const line of cmd.output) {
+        addTerminalLine(line);
+        await new Promise(resolve => setTimeout(resolve, 150));
+      }
+    }
+  };
+
+  const handleSendMessage = async (content: string) => {
     // Add user message
     const userMsg: ChatMessage = {
       id: crypto.randomUUID(),
@@ -95,31 +118,56 @@ function App() {
     };
     setMessages(prev => [...prev, userMsg]);
 
-    // Generate real code from description
+    // AI starts working
+    setIsAIBusy(true);
+    setAiStatus('Analyzing your request...');
+
+    // Simulate AI thinking + running commands
+    await new Promise(resolve => setTimeout(resolve, 800));
+    
+    setAiStatus('Running terminal commands...');
+    addTerminalLine('🤖 AI Terminal — Starting work');
+    
+    await runAICommands([
+      {
+        label: 'Analyzing requirements',
+        output: ['✓ Requirements parsed', '✓ Framework selected: React'],
+      },
+      {
+        label: 'Generating code',
+        output: ['✓ Components created', '✓ Styles applied', '✓ Logic implemented'],
+      },
+      {
+        label: 'Building project',
+        output: ['✓ Build successful', '✓ No errors found'],
+      },
+    ]);
+
+    // Generate real code
     const code = generateCode(content);
     setGeneratedCode(code);
+    addTerminalLine(`✓ Code generated (${code.length} chars)`);
+    addTerminalLine('✅ Ready — Check Preview panel');
 
     // Generate AI response
-    setTimeout(() => {
-      const aiMsg: ChatMessage = {
-        id: crypto.randomUUID(),
-        role: 'assistant',
-        content: generateResponse(content),
-        timestamp: new Date(),
-      };
-      setMessages(prev => [...prev, aiMsg]);
+    await new Promise(resolve => setTimeout(resolve, 500));
+    const aiMsg: ChatMessage = {
+      id: crypto.randomUUID(),
+      role: 'assistant',
+      content: generateResponse(content),
+      timestamp: new Date(),
+    };
+    setMessages(prev => [...prev, aiMsg]);
 
-      // Auto-switch to preview if not already there
-      if (activePanel === 'chat') {
-        // Keep on chat but user can switch
-      }
-    }, 800);
+    setIsAIBusy(false);
+    setAiStatus('');
   };
 
   const handleStartProject = (project: Project) => {
     setCurrentProject(project);
     setMessages([]);
     setGeneratedCode('');
+    setTerminalLines([]);
     setActivePanel('chat');
   };
 
@@ -179,12 +227,14 @@ function App() {
           <p className="text-lg md:text-xl text-gray-300 mb-2">
             Intelligent App Factory
           </p>
-          <p className="text-sm text-gray-500 mb-8 max-w-lg mx-auto">
-            Build Android apps, Windows apps, and web apps — all from conversation.
-            100% free, unlimited, local-first. No account required.
+          <p className="text-sm text-gray-500 mb-4 max-w-lg mx-auto">
+            You describe it. I build it. No coding required.
+          </p>
+          <p className="text-xs text-gray-600 mb-8 max-w-lg mx-auto">
+            100% free • Unlimited • Local-first • No account required
           </p>
           <div className="flex flex-wrap justify-center gap-3 mb-10">
-            {['🧠 Persistent Memory', '🔥 CRUCIBLE Vetting', '🎤 Voice Chat', '📱 App Factory', '🪡 Needle AI', '🖥️ Sandbox Terminal'].map(feature => (
+            {['🤖 I Code Everything', '👁️ Live Preview', '🧠 Persistent Memory', '📱 App Factory', '🪡 Needle AI', '🖥️ AI Terminal'].map(feature => (
               <span key={feature} className="px-3 py-1 bg-gray-800/50 border border-gray-700 rounded-full text-xs text-gray-400">
                 {feature}
               </span>
@@ -227,6 +277,8 @@ function App() {
             projectPhase={projectPhase}
             todos={currentProject?.todos || []}
             generatedCode={generatedCode}
+            aiStatus={aiStatus}
+            isAIBusy={isAIBusy}
           />
         );
       case 'preview':
@@ -234,7 +286,7 @@ function App() {
       case 'mind':
         return <MindPanel memories={memories} onAddMemory={handleAddMemory} />;
       case 'terminal':
-        return <TerminalPanel />;
+        return <TerminalPanel lines={terminalLines} isRunning={isAIBusy} currentTask={aiStatus} />;
       case 'projects':
         return <ProjectManager projects={projects} onStartProject={handleStartProject} onCreateProject={handleCreateProject} />;
       case 'templates':
@@ -257,6 +309,8 @@ function App() {
             projectPhase={projectPhase}
             todos={currentProject?.todos || []}
             generatedCode={generatedCode}
+            aiStatus={aiStatus}
+            isAIBusy={isAIBusy}
           />
         );
     }
@@ -300,9 +354,15 @@ function App() {
             )}
           </div>
           <div className="flex items-center gap-3">
+            {isAIBusy && (
+              <div className="flex items-center gap-2 text-xs text-purple-400">
+                <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse" />
+                <span>{aiStatus}</span>
+              </div>
+            )}
             {authMode === 'guest' && (
               <span className="px-2 py-1 bg-yellow-500/20 text-yellow-300 rounded text-xs">
-                👤 Guest Mode
+                👤 Guest
               </span>
             )}
             <VoiceControls

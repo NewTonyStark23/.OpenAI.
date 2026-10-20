@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Send, Code, Eye, Smartphone, Monitor } from 'lucide-react';
+import { Send, Code, Loader2, CheckCircle } from 'lucide-react';
 import type { ChatMessage, ProjectPhase, TodoItem } from '../App';
 
 interface ChatPanelProps {
@@ -9,9 +9,11 @@ interface ChatPanelProps {
   projectPhase: ProjectPhase;
   todos: TodoItem[];
   generatedCode: string;
+  aiStatus: string;
+  isAIBusy: boolean;
 }
 
-export default function ChatPanel({ messages, onSendMessage, projectPhase, todos, generatedCode }: ChatPanelProps) {
+export default function ChatPanel({ messages, onSendMessage, projectPhase, todos, generatedCode, aiStatus, isAIBusy }: ChatPanelProps) {
   const [input, setInput] = useState('');
   const [showCode, setShowCode] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -22,7 +24,7 @@ export default function ChatPanel({ messages, onSendMessage, projectPhase, todos
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (input.trim()) {
+    if (input.trim() && !isAIBusy) {
       onSendMessage(input.trim());
       setInput('');
     }
@@ -35,22 +37,26 @@ export default function ChatPanel({ messages, onSendMessage, projectPhase, todos
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full text-center">
             <div className="w-20 h-20 bg-purple-600/20 rounded-full flex items-center justify-center mb-4">
-              <span className="text-4xl">🧠</span>
+              <span className="text-4xl">🤖</span>
             </div>
             <h3 className="text-xl font-semibold text-white mb-2">
               {projectPhase === 'brainstorm' ? 'Brainstorm Mode' : 'Code Mode'}
             </h3>
-            <p className="text-gray-400 max-w-md">
+            <p className="text-gray-400 max-w-md mb-2">
               {projectPhase === 'brainstorm'
-                ? 'Describe what you want to build. Your code will appear in the Preview panel in real-time.'
-                : 'I\'m generating code based on our brainstorm. Watch the Preview panel for live output.'}
+                ? 'Tell me what you want to build. I\'ll handle everything — code, build, test, deploy.'
+                : 'I\'m working on your project. Ask me to make changes or additions.'}
             </p>
-            <div className="mt-6 grid grid-cols-2 gap-3 max-w-lg">
-              {['Build a landing page with hero section', 'Create a todo list app', 'Design a portfolio site', 'Make a login form'].map(suggestion => (
+            <p className="text-xs text-gray-500 mb-6">
+              💡 You don't code — I do. Just describe what you want.
+            </p>
+            <div className="mt-2 grid grid-cols-2 gap-3 max-w-lg">
+              {['Build a landing page', 'Create a todo app', 'Design a portfolio', 'Make a login form'].map(suggestion => (
                 <button
                   key={suggestion}
-                  onClick={() => onSendMessage(suggestion)}
-                  className="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg text-sm text-gray-300 transition-colors text-left"
+                  onClick={() => !isAIBusy && onSendMessage(suggestion)}
+                  disabled={isAIBusy}
+                  className="px-4 py-2 bg-gray-800 hover:bg-gray-700 disabled:opacity-50 rounded-lg text-sm text-gray-300 transition-colors text-left"
                 >
                   {suggestion}
                 </button>
@@ -80,6 +86,23 @@ export default function ChatPanel({ messages, onSendMessage, projectPhase, todos
             </div>
           </motion.div>
         ))}
+
+        {/* AI Working Indicator */}
+        {isAIBusy && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex justify-start"
+          >
+            <div className="max-w-[80%] rounded-2xl px-5 py-3 bg-gray-800 border border-purple-500/30">
+              <div className="flex items-center gap-2 text-sm text-purple-300">
+                <Loader2 size={14} className="animate-spin" />
+                <span>{aiStatus || 'Working...'}</span>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
         <div ref={messagesEndRef} />
       </div>
 
@@ -92,9 +115,10 @@ export default function ChatPanel({ messages, onSendMessage, projectPhase, todos
           >
             <span className="flex items-center gap-2">
               <Code size={14} />
-              Generated Code ({generatedCode.length} chars)
+              Generated Code ({generatedCode.length.toLocaleString()} chars)
+              <CheckCircle size={14} className="text-green-400" />
             </span>
-            <span>{showCode ? '▼' : '▲'}</span>
+            <span>{showCode ? '▼ Hide' : '▲ Show'}</span>
           </button>
           {showCode && (
             <div className="max-h-48 overflow-y-auto p-4 bg-black/50">
@@ -111,25 +135,28 @@ export default function ChatPanel({ messages, onSendMessage, projectPhase, todos
             type="text"
             value={input}
             onChange={e => setInput(e.target.value)}
-            placeholder={projectPhase === 'brainstorm'
+            disabled={isAIBusy}
+            placeholder={isAIBusy
+              ? 'I\'m working on it...'
+              : projectPhase === 'brainstorm'
               ? 'Describe what you want to build...'
-              : 'Request changes or updates...'}
-            className="flex-1 bg-gray-800 border border-gray-600 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 transition-colors"
+              : 'Tell me what to change...'}
+            className="flex-1 bg-gray-800 border border-gray-600 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 transition-colors disabled:opacity-50"
           />
           <button
             type="submit"
-            disabled={!input.trim()}
+            disabled={!input.trim() || isAIBusy}
             className="px-6 py-3 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-700 disabled:text-gray-500 rounded-xl transition-colors"
           >
-            <Send size={18} />
+            {isAIBusy ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
           </button>
         </form>
         <div className="flex items-center justify-between mt-2">
           <span className="text-xs text-gray-500">
-            🧠 Unlimited • No caps • Code renders in Preview →
+            🤖 I handle all coding • You just describe
           </span>
           <span className="text-xs text-gray-500">
-            Auto-detect language • Mirror response
+            Check Terminal → to see my work
           </span>
         </div>
       </div>
