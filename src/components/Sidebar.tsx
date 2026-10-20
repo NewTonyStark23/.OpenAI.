@@ -2,9 +2,9 @@ import { motion } from 'framer-motion';
 import {
   MessageSquare, Eye, Brain, Terminal, FolderOpen, Layout,
   ChevronLeft, ChevronRight, LogOut, Mic, Settings, Rocket,
-  Activity, Volume2, Wand2
+  Activity, Volume2, Wand2, User
 } from 'lucide-react';
-import type { PanelView, Project } from '../App';
+import type { PanelView, Project, AuthMode } from '../App';
 
 interface SidebarProps {
   activePanel: PanelView;
@@ -13,6 +13,7 @@ interface SidebarProps {
   setCollapsed: (collapsed: boolean) => void;
   onLogout: () => void;
   currentProject: Project | null;
+  authMode: AuthMode;
 }
 
 const navItems: { id: PanelView; icon: typeof MessageSquare; label: string; section: string }[] = [
@@ -30,7 +31,7 @@ const navItems: { id: PanelView; icon: typeof MessageSquare; label: string; sect
 ];
 
 export default function Sidebar({
-  activePanel, setActivePanel, collapsed, setCollapsed, onLogout, currentProject
+  activePanel, setActivePanel, collapsed, setCollapsed, onLogout, currentProject, authMode
 }: SidebarProps) {
   const sections = [...new Set(navItems.map(item => item.section))];
 
@@ -43,7 +44,7 @@ export default function Sidebar({
       <div className="h-14 flex items-center justify-between px-4 border-b border-gray-700">
         {!collapsed && (
           <h1 className="text-lg font-bold">
-            Nexus<span className="text-purple-400">AI</span>
+            Open<span className="text-purple-400">AI</span>
           </h1>
         )}
         <button
@@ -95,24 +96,40 @@ export default function Sidebar({
       {/* Bottom Section */}
       <div className="border-t border-gray-700 p-4">
         {!collapsed && (
-          <div className="mb-3 p-3 bg-gray-700/50 rounded-lg">
-            <div className="flex items-center gap-2 mb-1">
-              <Mic size={14} className="text-green-400" />
-              <span className="text-xs text-green-400">Voice Ready</span>
+          <>
+            {/* User Status */}
+            <div className="mb-3 p-3 bg-gray-700/50 rounded-lg">
+              <div className="flex items-center gap-2 mb-1">
+                {authMode === 'guest' ? (
+                  <>
+                    <User size={14} className="text-yellow-400" />
+                    <span className="text-xs text-yellow-300">Guest Mode</span>
+                  </>
+                ) : (
+                  <>
+                    <Mic size={14} className="text-green-400" />
+                    <span className="text-xs text-green-400">Signed In</span>
+                  </>
+                )}
+              </div>
+              <p className="text-xs text-gray-400">
+                {authMode === 'guest'
+                  ? 'Data stored locally'
+                  : 'KittenTTS + Whistle'}
+              </p>
+              <div className="mt-2 flex items-center gap-2">
+                <span className="px-1.5 py-0.5 bg-gray-600 rounded text-xs text-gray-300">🪡 Needle</span>
+                <span className="px-1.5 py-0.5 bg-gray-600 rounded text-xs text-gray-300">🧠 xerj</span>
+              </div>
             </div>
-            <p className="text-xs text-gray-400">KittenTTS + Whistle</p>
-            <div className="mt-2 flex items-center gap-2">
-              <span className="px-1.5 py-0.5 bg-gray-600 rounded text-xs text-gray-300">🪡 Needle</span>
-              <span className="px-1.5 py-0.5 bg-gray-600 rounded text-xs text-gray-300">🧠 xerj</span>
-            </div>
-          </div>
+          </>
         )}
         <button
           onClick={onLogout}
           className="w-full flex items-center gap-3 px-2 py-2 text-gray-400 hover:text-red-400 transition-colors rounded-lg hover:bg-gray-700"
         >
           <LogOut size={18} />
-          {!collapsed && <span className="text-sm">Logout</span>}
+          {!collapsed && <span className="text-sm">{authMode === 'guest' ? 'Exit Guest' : 'Logout'}</span>}
         </button>
       </div>
     </motion.div>

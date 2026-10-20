@@ -14,7 +14,7 @@ export default function TerminalPanel() {
     {
       id: '1',
       type: 'system',
-      content: '🔒 NexusAI Dummy Terminal v1.0 — Sandboxed Environment',
+      content: '🔒 OpenAI Dummy Terminal v1.0 — Sandboxed Environment',
       timestamp: new Date(),
     },
     {
@@ -147,7 +147,7 @@ export default function TerminalPanel() {
             <div className="w-3 h-3 rounded-full bg-yellow-500" />
             <div className="w-3 h-3 rounded-full bg-green-500" onClick={handleRestart} />
           </div>
-          <span className="text-xs text-gray-400">nexus-terminal — sandboxed</span>
+          <span className="text-xs text-gray-400">openai-terminal — sandboxed</span>
         </div>
         <div className="flex items-center gap-2">
           <Shield size={14} className="text-green-400" />

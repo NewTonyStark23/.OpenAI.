@@ -9,7 +9,7 @@ export default function SettingsPanel() {
   const [publishMode, setPublishMode] = useState<'personal' | 'google-play'>('personal');
   const [language, setLanguage] = useState<'auto' | 'en' | 'es' | 'ja' | 'ko' | 'zh'>('auto');
   const [ttsVoice, setTtsVoice] = useState('Bruno');
-  const [wakeWord, setWakeWord] = useState('Hey Nexus');
+  const [wakeWord, setWakeWord] = useState('Hey OpenAI');
   const [hardwareMode, setHardwareMode] = useState<'auto' | 'high' | 'medium' | 'low'>('auto');
 
   // Simulated hardware detection

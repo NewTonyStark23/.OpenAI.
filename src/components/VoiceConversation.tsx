@@ -93,7 +93,7 @@ export default function VoiceConversation({ active, setActive, ttsEnabled, setTt
           </div>
         </div>
         <p className="text-xs text-gray-500 mt-1">
-          KittenTTS (47 voices) • Whistle STT (7 languages) • Wake word: "Hey Nexus"
+          KittenTTS (47 voices) • Whistle STT (7 languages) • Wake word: "Hey OpenAI"
         </p>
       </div>
 
@@ -124,7 +124,7 @@ export default function VoiceConversation({ active, setActive, ttsEnabled, setTt
         </motion.button>
 
         <p className="text-sm text-gray-400 mt-4">
-          {active ? 'Say "Hey Nexus" to start talking' : 'Click to enable wake word detection'}
+          {active ? 'Say "Hey OpenAI" to start talking' : 'Click to enable wake word detection'}
         </p>
 
         {/* Listening Window */}

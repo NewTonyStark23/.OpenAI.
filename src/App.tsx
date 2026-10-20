@@ -18,6 +18,7 @@ import AutocorrectPanel from './components/AutocorrectPanel';
 
 export type PanelView = 'chat' | 'preview' | 'mind' | 'terminal' | 'projects' | 'templates' | 'settings' | 'build' | 'ram' | 'voice' | 'autocorrect';
 export type ProjectPhase = 'brainstorm' | 'code';
+export type AuthMode = 'logged-in' | 'guest' | 'none';
 
 export interface Project {
   id: string;
@@ -53,7 +54,7 @@ export interface ChatMessage {
 
 function App() {
   const [activePanel, setActivePanel] = useState<PanelView>('chat');
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [authMode, setAuthMode] = useState<AuthMode>('none');
   const [showAuth, setShowAuth] = useState(false);
   const [currentProject, setCurrentProject] = useState<Project | null>(null);
   const [projectPhase, setProjectPhase] = useState<ProjectPhase>('brainstorm');
@@ -64,12 +65,17 @@ function App() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   const handleLogin = () => {
-    setIsAuthenticated(true);
+    setAuthMode('logged-in');
+    setShowAuth(false);
+  };
+
+  const handleGuest = () => {
+    setAuthMode('guest');
     setShowAuth(false);
   };
 
   const handleLogout = () => {
-    setIsAuthenticated(false);
+    setAuthMode('none');
     setCurrentProject(null);
     setMessages([]);
   };
@@ -127,7 +133,8 @@ function App() {
     }
   };
 
-  if (!isAuthenticated) {
+  // Landing / Auth screen
+  if (authMode === 'none') {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 flex items-center justify-center">
         <motion.div
@@ -135,32 +142,45 @@ function App() {
           animate={{ opacity: 1, y: 0 }}
           className="text-center px-4"
         >
-          <h1 className="text-5xl md:text-6xl font-bold text-white mb-4">
-            Nexus<span className="text-purple-400">AI</span>
+          <h1 className="text-5xl md:text-7xl font-bold text-white mb-2">
+            Open<span className="text-purple-400">AI</span>
           </h1>
           <p className="text-lg md:text-xl text-gray-300 mb-2">
             Intelligent App Factory
           </p>
-          <p className="text-sm text-gray-500 mb-8 max-w-md mx-auto">
+          <p className="text-sm text-gray-500 mb-8 max-w-lg mx-auto">
             Build Android apps, Windows apps, and web apps — all from conversation.
-            100% free, unlimited, local-first.
+            100% free, unlimited, local-first. No account required.
           </p>
-          <div className="flex flex-wrap justify-center gap-3 mb-8">
+          <div className="flex flex-wrap justify-center gap-3 mb-10">
             {['🧠 Persistent Memory', '🔥 CRUCIBLE Vetting', '🎤 Voice Chat', '📱 App Factory', '🪡 Needle AI', '🖥️ Sandbox Terminal'].map(feature => (
               <span key={feature} className="px-3 py-1 bg-gray-800/50 border border-gray-700 rounded-full text-xs text-gray-400">
                 {feature}
               </span>
             ))}
           </div>
-          <button
-            onClick={() => setShowAuth(true)}
-            className="px-8 py-4 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-lg font-semibold transition-all hover:scale-105"
-          >
-            Get Started — It's Free
-          </button>
+
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <button
+              onClick={() => setShowAuth(true)}
+              className="px-8 py-4 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-lg font-semibold transition-all hover:scale-105"
+            >
+              Sign In / Sign Up
+            </button>
+            <button
+              onClick={handleGuest}
+              className="px-8 py-4 bg-gray-700 hover:bg-gray-600 text-white rounded-xl text-lg font-semibold transition-all hover:scale-105 border border-gray-600"
+            >
+              Continue Without Login →
+            </button>
+          </div>
+
+          <p className="text-xs text-gray-600 mt-6">
+            Guest mode: All data stored locally on your device. No sign-up needed.
+          </p>
         </motion.div>
         <AnimatePresence>
-          {showAuth && <AuthModal onLogin={handleLogin} onClose={() => setShowAuth(false)} />}
+          {showAuth && <AuthModal onLogin={handleLogin} onGuest={handleGuest} onClose={() => setShowAuth(false)} />}
         </AnimatePresence>
       </div>
     );
@@ -205,6 +225,7 @@ function App() {
         setCollapsed={setSidebarCollapsed}
         onLogout={handleLogout}
         currentProject={currentProject}
+        authMode={authMode}
       />
 
       {/* Main Content */}
@@ -213,7 +234,7 @@ function App() {
         <div className="h-14 bg-gray-800 border-b border-gray-700 flex items-center justify-between px-4">
           <div className="flex items-center gap-4">
             <h2 className="text-lg font-semibold">
-              {currentProject ? currentProject.name : 'NexusAI Platform'}
+              {currentProject ? currentProject.name : 'OpenAI Platform'}
             </h2>
             {currentProject && (
               <div className="flex items-center gap-2">
@@ -234,6 +255,11 @@ function App() {
             )}
           </div>
           <div className="flex items-center gap-3">
+            {authMode === 'guest' && (
+              <span className="px-2 py-1 bg-yellow-500/20 text-yellow-300 rounded text-xs">
+                👤 Guest Mode
+              </span>
+            )}
             <VoiceControls
               active={voiceActive}
               setActive={setVoiceActive}
@@ -285,7 +311,7 @@ function App() {
 
       {/* Auth Modal */}
       <AnimatePresence>
-        {showAuth && <AuthModal onLogin={handleLogin} onClose={() => setShowAuth(false)} />}
+        {showAuth && <AuthModal onLogin={handleLogin} onGuest={handleGuest} onClose={() => setShowAuth(false)} />}
       </AnimatePresence>
     </div>
   );
