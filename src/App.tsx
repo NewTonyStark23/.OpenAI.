@@ -15,10 +15,13 @@ import BuildPipeline from './components/BuildPipeline';
 import RamGraphStatus from './components/RamGraphStatus';
 import VoiceConversation from './components/VoiceConversation';
 import AutocorrectPanel from './components/AutocorrectPanel';
+import ConnectorsPanel from './components/ConnectorsPanel';
+import DeviceActionPanel from './components/DeviceActionPanel';
 import { generateCode, generateResponse } from './utils/codeGenerator';
+import { pendingActions, executeAfterConfirmation, requestConfirmation } from './utils/safetySystem';
 import { PanelRight, PanelBottom, Maximize2, Terminal } from 'lucide-react';
 
-export type PanelView = 'chat' | 'preview' | 'mind' | 'terminal' | 'projects' | 'templates' | 'settings' | 'build' | 'ram' | 'voice' | 'autocorrect';
+export type PanelView = 'chat' | 'preview' | 'mind' | 'terminal' | 'projects' | 'templates' | 'settings' | 'build' | 'ram' | 'voice' | 'autocorrect' | 'connectors';
 export type ProjectPhase = 'brainstorm' | 'code';
 export type AuthMode = 'logged-in' | 'guest' | 'none';
 export type LayoutMode = 'split' | 'chat-only' | 'preview-only';
@@ -284,17 +287,34 @@ function App() {
           <div className="flex-1 flex overflow-hidden">
             {/* Chat / Main Panel */}
             <div className={`flex flex-col overflow-hidden ${layoutMode === 'split' ? 'flex-1' : 'flex-1'}`}>
-              <div className="flex-1 overflow-hidden">
+              <div className="flex-1 overflow-hidden flex flex-col">
                 {activePanel === 'chat' && (
-                  <ChatPanel
-                    messages={messages}
-                    onSendMessage={handleSendMessage}
-                    projectPhase={projectPhase}
-                    todos={currentProject?.todos || []}
-                    generatedCode={generatedCode}
-                    aiStatus={aiStatus}
-                    isAIBusy={isAIBusy}
-                  />
+                  <>
+                    <div className="flex-1 overflow-hidden">
+                      <ChatPanel
+                        messages={messages}
+                        onSendMessage={handleSendMessage}
+                        projectPhase={projectPhase}
+                        todos={currentProject?.todos || []}
+                        generatedCode={generatedCode}
+                        aiStatus={aiStatus}
+                        isAIBusy={isAIBusy}
+                      />
+                    </div>
+                    <DeviceActionPanel
+                      onConfirm={async (actionId) => {
+                        await executeAfterConfirmation(actionId, async (action) => {
+                          addTerminalLine(`✓ Confirmed: ${action.action} on ${action.device}`);
+                          // Execute the actual device command here
+                          return { success: true };
+                        });
+                      }}
+                      onCancel={(actionId) => {
+                        pendingActions.remove(actionId);
+                        addTerminalLine(`✗ Cancelled action`);
+                      }}
+                    />
+                  </>
                 )}
                 {activePanel === 'mind' && <MindPanel memories={memories} onAddMemory={handleAddMemory} />}
                 {activePanel === 'projects' && <ProjectManager projects={projects} onStartProject={handleStartProject} onCreateProject={handleCreateProject} />}
@@ -304,6 +324,7 @@ function App() {
                 {activePanel === 'ram' && <RamGraphStatus />}
                 {activePanel === 'voice' && <VoiceConversation active={voiceActive} setActive={setVoiceActive} ttsEnabled={ttsEnabled} setTtsEnabled={setTtsEnabled} />}
                 {activePanel === 'autocorrect' && <AutocorrectPanel />}
+                {activePanel === 'connectors' && <ConnectorsPanel />}
                 {activePanel === 'preview' && layoutMode === 'chat-only' && <PreviewPanel generatedCode={generatedCode} />}
               </div>
             </div>

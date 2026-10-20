@@ -4,7 +4,7 @@ import {
   MessageSquare, Eye, Brain, Terminal, FolderOpen, Layout,
   ChevronLeft, ChevronRight, LogOut, Settings, Rocket,
   Activity, Volume2, Wand2, FileCode, Plus, Folder, ChevronDown,
-  PanelRight, PanelBottom, Maximize2, Minimize2
+  PanelRight, PanelBottom, Maximize2, Minimize2, Zap
 } from 'lucide-react';
 import type { PanelView, Project, AuthMode } from '../App';
 
@@ -96,6 +96,15 @@ export default function Sidebar({
               title="Settings"
             >
               <Settings size={16} />
+            </button>
+            <button
+              onClick={() => setActivePanel('connectors')}
+              className={`p-2 rounded transition-colors ${
+                activePanel === 'connectors' ? 'bg-purple-600/20 text-purple-400' : 'text-gray-400 hover:bg-[#2a2a2a]'
+              }`}
+              title="Connectors"
+            >
+              <Zap size={16} />
             </button>
           </>
         )}
