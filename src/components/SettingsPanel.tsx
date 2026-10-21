@@ -278,6 +278,100 @@ export default function SettingsPanel() {
           </div>
         </section>
 
+        {/* VSCode Setup */}
+        <section className="bg-gray-800 rounded-xl p-5 border border-gray-700">
+          <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+            <Code2 size={18} className="text-blue-400" />
+            VSCode Development Setup
+          </h3>
+          <div className="space-y-4">
+            <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
+              <p className="text-sm text-blue-300 mb-2">
+                <strong>Quick Start:</strong> Open this project in VSCode and install recommended extensions
+              </p>
+              <div className="bg-gray-900 rounded p-3 font-mono text-xs text-gray-300">
+                <div className="text-green-400">$ code .</div>
+                <div className="text-gray-500 mt-1"># VSCode will prompt to install recommended extensions</div>
+                <div className="text-green-400 mt-2">$ npm install</div>
+                <div className="text-green-400">$ npm run dev</div>
+              </div>
+            </div>
+
+            <div>
+              <p className="text-sm text-gray-400 mb-2">Recommended Extensions (Auto-installed):</p>
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  { name: 'ESLint', desc: 'Code linting' },
+                  { name: 'Prettier', desc: 'Code formatting' },
+                  { name: 'Tailwind CSS', desc: 'CSS autocomplete' },
+                  { name: 'TypeScript', desc: 'Type checking' },
+                  { name: 'React Snippets', desc: 'Code snippets' },
+                  { name: 'GitLens', desc: 'Git integration' },
+                ].map(ext => (
+                  <div key={ext.name} className="bg-gray-700/50 rounded p-2">
+                    <p className="text-xs font-medium text-white">{ext.name}</p>
+                    <p className="text-xs text-gray-400">{ext.desc}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <p className="text-sm text-gray-400 mb-2">Useful Commands:</p>
+              <div className="space-y-1 text-xs font-mono text-gray-300">
+                <div className="flex items-center gap-2">
+                  <span className="text-purple-400">F5</span>
+                  <span className="text-gray-500">→</span>
+                  <span>Start debugging</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-purple-400">Ctrl+Shift+P</span>
+                  <span className="text-gray-500">→</span>
+                  <span>Command palette</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-purple-400">Ctrl+`</span>
+                  <span className="text-gray-500">→</span>
+                  <span>Toggle terminal</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-2">
+              <button
+                onClick={() => window.open('https://code.visualstudio.com/', '_blank')}
+                className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm font-medium transition-colors"
+              >
+                📥 Download VSCode
+              </button>
+              <button
+                onClick={() => {
+                  const instructions = `VSCode Setup Instructions:
+
+1. Install VSCode from https://code.visualstudio.com/
+2. Open this project folder in VSCode
+3. Click "Install All" when prompted for recommended extensions
+4. Run: npm install
+5. Run: npm run dev
+6. Open http://localhost:5173
+
+Debug Configurations:
+- F5: Start debugging
+- Ctrl+Shift+P: Command palette
+- Tasks: Run Task → Start Dev Server
+
+For more info, see VSCODE_SETUP.md`;
+                  navigator.clipboard.writeText(instructions);
+                  alert('VSCode setup instructions copied to clipboard!');
+                }}
+                className="flex-1 px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg text-sm font-medium transition-colors"
+              >
+                📋 Copy Setup Instructions
+              </button>
+            </div>
+          </div>
+        </section>
+
         {/* Save */}
         <div className="flex justify-end gap-3 pb-6">
           <button className="px-6 py-3 bg-gray-700 hover:bg-gray-600 rounded-lg text-sm font-medium transition-colors">

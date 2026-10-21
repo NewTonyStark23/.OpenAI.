@@ -8,13 +8,8 @@ import TerminalPanel from './components/TerminalPanel';
 import VoiceControls from './components/VoiceControls';
 import AuthModal from './components/AuthModal';
 import ProjectManager from './components/ProjectManager';
-import TemplateLibrary from './components/TemplateLibrary';
 import VettingPanel from './components/VettingPanel';
 import SettingsPanel from './components/SettingsPanel';
-import BuildPipeline from './components/BuildPipeline';
-import RamGraphStatus from './components/RamGraphStatus';
-import VoiceConversation from './components/VoiceConversation';
-import AutocorrectPanel from './components/AutocorrectPanel';
 import ConnectorsPanel from './components/ConnectorsPanel';
 import DeviceActionPanel from './components/DeviceActionPanel';
 import TaskQueuePanel from './components/TaskQueuePanel';
@@ -26,7 +21,7 @@ import { needleIntegration, startNeedleMonitoring } from './utils/needleIntegrat
 import { parseDeviceCommand, generatePermissionMessage, executeDeviceCommand, permissionManager } from './utils/deviceControl';
 import { PanelRight, PanelBottom, Maximize2, Terminal } from 'lucide-react';
 
-export type PanelView = 'chat' | 'preview' | 'mind' | 'terminal' | 'projects' | 'templates' | 'settings' | 'build' | 'ram' | 'voice' | 'autocorrect' | 'connectors' | 'tasks' | 'errors';
+export type PanelView = 'chat' | 'preview' | 'mind' | 'terminal' | 'projects' | 'settings' | 'connectors' | 'tasks' | 'errors';
 export type ProjectPhase = 'brainstorm' | 'code';
 export type AuthMode = 'logged-in' | 'guest' | 'none';
 export type LayoutMode = 'split' | 'chat-only' | 'preview-only';
@@ -410,12 +405,7 @@ function App() {
                 )}
                 {activePanel === 'mind' && <MindPanel memories={memories} onAddMemory={handleAddMemory} />}
                 {activePanel === 'projects' && <ProjectManager projects={projects} onStartProject={handleStartProject} onCreateProject={handleCreateProject} />}
-                {activePanel === 'templates' && <TemplateLibrary onCreateProject={handleStartProject} />}
                 {activePanel === 'settings' && <SettingsPanel />}
-                {activePanel === 'build' && <BuildPipeline />}
-                {activePanel === 'ram' && <RamGraphStatus />}
-                {activePanel === 'voice' && <VoiceConversation active={voiceActive} setActive={setVoiceActive} ttsEnabled={ttsEnabled} setTtsEnabled={setTtsEnabled} />}
-                {activePanel === 'autocorrect' && <AutocorrectPanel />}
                 {activePanel === 'connectors' && <ConnectorsPanel />}
                 {activePanel === 'tasks' && <TaskQueuePanel onInterrupt={handleInterrupt} />}
                 {activePanel === 'errors' && <ErrorManagementPanel />}
