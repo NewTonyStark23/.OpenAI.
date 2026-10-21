@@ -4,7 +4,7 @@ import {
   MessageSquare, Eye, Brain, Terminal, FolderOpen, Layout,
   ChevronLeft, ChevronRight, LogOut, Settings, Rocket,
   Activity, Volume2, Wand2, FileCode, Plus, Folder, ChevronDown,
-  PanelRight, PanelBottom, Maximize2, Minimize2, Zap, ListTodo
+  PanelRight, PanelBottom, Maximize2, Minimize2, Zap, ListTodo, AlertTriangle
 } from 'lucide-react';
 import type { PanelView, Project, AuthMode } from '../App';
 
@@ -114,6 +114,15 @@ export default function Sidebar({
               title="Task Queue"
             >
               <ListTodo size={16} />
+            </button>
+            <button
+              onClick={() => setActivePanel('errors')}
+              className={`p-2 rounded transition-colors ${
+                activePanel === 'errors' ? 'bg-purple-600/20 text-purple-400' : 'text-gray-400 hover:bg-[#2a2a2a]'
+              }`}
+              title="Error Management"
+            >
+              <AlertTriangle size={16} />
             </button>
           </>
         )}

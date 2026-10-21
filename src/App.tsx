@@ -18,13 +18,14 @@ import AutocorrectPanel from './components/AutocorrectPanel';
 import ConnectorsPanel from './components/ConnectorsPanel';
 import DeviceActionPanel from './components/DeviceActionPanel';
 import TaskQueuePanel from './components/TaskQueuePanel';
+import ErrorManagementPanel from './components/ErrorManagementPanel';
 import { generateCode, generateResponse } from './utils/codeGenerator';
 import { pendingActions, executeAfterConfirmation, requestConfirmation } from './utils/safetySystem';
 import { taskQueue, createTaskFromPrompt } from './utils/taskQueue';
 import { needleIntegration, startNeedleMonitoring } from './utils/needleIntegration';
 import { PanelRight, PanelBottom, Maximize2, Terminal } from 'lucide-react';
 
-export type PanelView = 'chat' | 'preview' | 'mind' | 'terminal' | 'projects' | 'templates' | 'settings' | 'build' | 'ram' | 'voice' | 'autocorrect' | 'connectors' | 'tasks';
+export type PanelView = 'chat' | 'preview' | 'mind' | 'terminal' | 'projects' | 'templates' | 'settings' | 'build' | 'ram' | 'voice' | 'autocorrect' | 'connectors' | 'tasks' | 'errors';
 export type ProjectPhase = 'brainstorm' | 'code';
 export type AuthMode = 'logged-in' | 'guest' | 'none';
 export type LayoutMode = 'split' | 'chat-only' | 'preview-only';
@@ -357,6 +358,7 @@ function App() {
                 {activePanel === 'autocorrect' && <AutocorrectPanel />}
                 {activePanel === 'connectors' && <ConnectorsPanel />}
                 {activePanel === 'tasks' && <TaskQueuePanel onInterrupt={handleInterrupt} />}
+                {activePanel === 'errors' && <ErrorManagementPanel />}
                 {activePanel === 'preview' && layoutMode === 'chat-only' && <PreviewPanel generatedCode={generatedCode} />}
               </div>
             </div>
