@@ -4,7 +4,7 @@ import {
   MessageSquare, Eye, Brain, Terminal, FolderOpen, Layout,
   ChevronLeft, ChevronRight, LogOut, Settings, Rocket,
   Activity, Volume2, Wand2, FileCode, Plus, Folder, ChevronDown,
-  PanelRight, PanelBottom, Maximize2, Minimize2, Zap, ListTodo, AlertTriangle, GitBranch
+  PanelRight, PanelBottom, Maximize2, Minimize2, Zap, ListTodo, AlertTriangle, GitBranch, Monitor, BookOpen
 } from 'lucide-react';
 import type { PanelView, Project, AuthMode } from '../App';
 
@@ -105,6 +105,24 @@ export default function Sidebar({
               title="Error Management"
             >
               <AlertTriangle size={16} />
+            </button>
+            <button
+              onClick={() => setActivePanel('deploy')}
+              className={`p-2 rounded transition-colors ${
+                activePanel === 'deploy' ? 'bg-purple-600/20 text-purple-400' : 'text-gray-400 hover:bg-[#2a2a2a]'
+              }`}
+              title="Desktop Deploy"
+            >
+              <Monitor size={16} />
+            </button>
+            <button
+              onClick={() => setActivePanel('prompts')}
+              className={`p-2 rounded transition-colors ${
+                activePanel === 'prompts' ? 'bg-purple-600/20 text-purple-400' : 'text-gray-400 hover:bg-[#2a2a2a]'
+              }`}
+              title="AI Rule Book"
+            >
+              <BookOpen size={16} />
             </button>
           </>
         )}

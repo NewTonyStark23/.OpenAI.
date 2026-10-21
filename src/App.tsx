@@ -14,14 +14,17 @@ import ConnectorsPanel from './components/ConnectorsPanel';
 import DeviceActionPanel from './components/DeviceActionPanel';
 import TaskQueuePanel from './components/TaskQueuePanel';
 import ErrorManagementPanel from './components/ErrorManagementPanel';
+import DesktopDeploy from './components/DesktopDeploy';
+import SystemPromptsPanel from './components/SystemPromptsPanel';
 import { generateCode, generateResponse } from './utils/codeGenerator';
 import { pendingActions, executeAfterConfirmation, requestConfirmation } from './utils/safetySystem';
 import { taskQueue, createTaskFromPrompt } from './utils/taskQueue';
 import { needleIntegration, startNeedleMonitoring } from './utils/needleIntegration';
 import { parseDeviceCommand, generatePermissionMessage, executeDeviceCommand, permissionManager } from './utils/deviceControl';
+import { getSystemPrompt } from './utils/systemPrompt';
 import { PanelRight, PanelBottom, Maximize2, Terminal } from 'lucide-react';
 
-export type PanelView = 'chat' | 'preview' | 'mind' | 'terminal' | 'projects' | 'settings' | 'connectors' | 'tasks' | 'errors';
+export type PanelView = 'chat' | 'preview' | 'mind' | 'terminal' | 'projects' | 'settings' | 'connectors' | 'tasks' | 'errors' | 'deploy' | 'prompts';
 export type ProjectPhase = 'brainstorm' | 'code';
 export type AuthMode = 'logged-in' | 'guest' | 'none';
 export type LayoutMode = 'split' | 'chat-only' | 'preview-only';
@@ -195,9 +198,12 @@ function App() {
     addTerminalLine('✅ Ready — Check Preview →');
 
     await new Promise(resolve => setTimeout(resolve, 400));
+    
+    // Get system prompt and generate response with it
+    const systemPrompt = getSystemPrompt();
     const aiMsg: ChatMessage = {
       id: crypto.randomUUID(), role: 'assistant',
-      content: generateResponse(content), timestamp: new Date(),
+      content: generateResponse(content, systemPrompt), timestamp: new Date(),
     };
     setMessages(prev => [...prev, aiMsg]);
     setIsAIBusy(false);
@@ -409,6 +415,8 @@ function App() {
                 {activePanel === 'connectors' && <ConnectorsPanel />}
                 {activePanel === 'tasks' && <TaskQueuePanel onInterrupt={handleInterrupt} />}
                 {activePanel === 'errors' && <ErrorManagementPanel />}
+                {activePanel === 'deploy' && <DesktopDeploy />}
+                {activePanel === 'prompts' && <SystemPromptsPanel />}
                 {activePanel === 'preview' && layoutMode === 'chat-only' && <PreviewPanel generatedCode={generatedCode} />}
               </div>
             </div>

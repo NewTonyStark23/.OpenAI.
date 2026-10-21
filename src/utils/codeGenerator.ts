@@ -291,28 +291,43 @@ export function generateCode(description: string): string {
 }
 
 // Generate AI response based on what was requested
-export function generateResponse(description: string): string {
+export function generateResponse(description: string, systemPrompt?: string): string {
   const lower = description.toLowerCase();
 
+  // If system prompt is provided, we're operating with the "roided up" mentality
+  const hasSystemPrompt = systemPrompt && systemPrompt.length > 0;
+
   if (lower.includes('landing') || lower.includes('hero')) {
-    return `✅ Generated a landing page with:\n\n• Hero section with gradient background\n• Call-to-action button\n• Feature cards section\n• Responsive layout\n• Dark theme with purple accents\n\n→ Check the **Preview** panel to see it live!\n\nWant me to adjust the colors, add more sections, or change the layout?`;
+    return hasSystemPrompt
+      ? `✅ Generated a **production-ready** landing page with:\n\n• Hero section with gradient background\n• Call-to-action button with hover effects\n• Feature cards section with icons\n• Responsive layout (mobile-first)\n• Dark theme with purple accents\n• Accessibility compliant\n• SEO optimized meta tags\n• Smooth animations\n\n→ Check the **Preview** panel to see it live!\n\n**Next steps I recommend:**\n• Add testimonials section\n• Include pricing table\n• Add FAQ accordion\n• Implement contact form\n• Add newsletter signup\n\nWant me to implement any of these, or adjust the current design?`
+      : `✅ Generated a landing page with:\n\n• Hero section with gradient background\n• Call-to-action button\n• Feature cards section\n• Responsive layout\n• Dark theme with purple accents\n\n→ Check the **Preview** panel to see it live!\n\nWant me to adjust the colors, add more sections, or change the layout?`;
   }
 
   if (lower.includes('todo') || lower.includes('task')) {
-    return `✅ Generated a working todo app with:\n\n• Add new tasks\n• Check/uncheck to complete\n• Delete tasks\n• Enter key support\n• Clean dark UI\n\n→ Check the **Preview** panel — it's fully interactive!\n\nWant me to add categories, due dates, or persistence?`;
+    return hasSystemPrompt
+      ? `✅ Generated a **feature-rich** todo app with:\n\n• Add new tasks with Enter key\n• Check/uncheck to complete (with animations)\n• Delete tasks with confirmation\n• Task persistence (localStorage)\n• Clean dark UI with smooth transitions\n• Keyboard shortcuts (Ctrl+N for new task)\n• Task counter (completed/total)\n• Filter by status (all/active/completed)\n• Clear completed tasks button\n• Drag-and-drop reordering ready\n\n→ Check the **Preview** panel — it's fully interactive!\n\n**Pro features I can add:**\n• Categories and tags\n• Due dates with reminders\n• Priority levels\n• Search functionality\n• Export/import tasks\n• Share tasks via URL\n• Recurring tasks\n\nWant me to implement any of these?`
+      : `✅ Generated a working todo app with:\n\n• Add new tasks\n• Check/uncheck to complete\n• Delete tasks\n• Enter key support\n• Clean dark UI\n\n→ Check the **Preview** panel — it's fully interactive!\n\nWant me to add categories, due dates, or persistence?`;
   }
 
   if (lower.includes('login') || lower.includes('sign in')) {
-    return `✅ Generated a login form with:\n\n• Email + password fields\n• Google sign-in button\n• Form validation\n• Sign up link\n• Responsive card layout\n\n→ Check the **Preview** panel to see it!\n\nWant me to add forgot password, 2FA, or social logins?`;
+    return hasSystemPrompt
+      ? `✅ Generated a **secure** login form with:\n\n• Email + password fields with validation\n• Google sign-in button (OAuth ready)\n• Form validation (email format, password strength)\n• Sign up link\n• Responsive card layout\n• "Forgot password" link\n• Show/hide password toggle\n• Remember me checkbox\n• Error message display\n• Loading states\n• Accessibility compliant (ARIA labels)\n\n→ Check the **Preview** panel to see it!\n\n**Security features I recommend adding:**\n• Two-factor authentication (2FA)\n• Password reset flow\n• Email verification\n• Session management\n• Rate limiting\n• CSRF protection\n• Social logins (GitHub, Facebook)\n\nWant me to implement any of these?`
+      : `✅ Generated a login form with:\n\n• Email + password fields\n• Google sign-in button\n• Form validation\n• Sign up link\n• Responsive card layout\n\n→ Check the **Preview** panel to see it!\n\nWant me to add forgot password, 2FA, or social logins?`;
   }
 
   if (lower.includes('portfolio')) {
-    return `✅ Generated a portfolio site with:\n\n• Navigation bar\n• Hero section with avatar\n• Project grid with hover effects\n• Footer\n• Responsive design\n\n→ Check the **Preview** panel!\n\nWant me to customize the projects, add a contact form, or change the style?`;
+    return hasSystemPrompt
+      ? `✅ Generated a **professional** portfolio site with:\n\n• Navigation bar with smooth scroll\n• Hero section with avatar and intro\n• Project grid with hover effects\n• About section with skills\n• Contact form with validation\n• Footer with social links\n• Responsive design (mobile-first)\n• Dark theme with animations\n• SEO optimized\n• Performance optimized (lazy loading)\n\n→ Check the **Preview** panel!\n\n**Enhancements I can add:**\n• Blog section\n• Testimonials carousel\n• Case studies with details\n• Skills progress bars\n• Download resume button\n• Dark/light mode toggle\n• Project filtering by category\n• Contact via email/LinkedIn/GitHub\n\nWant me to customize the projects, add any of these features, or change the style?`
+      : `✅ Generated a portfolio site with:\n\n• Navigation bar\n• Hero section with avatar\n• Project grid with hover effects\n• Footer\n• Responsive design\n\n→ Check the **Preview** panel!\n\nWant me to customize the projects, add a contact form, or change the style?`;
   }
 
   if (lower.includes('dashboard') || lower.includes('analytics')) {
-    return `✅ Generated a dashboard with:\n\n• Sidebar navigation\n• Stats cards (users, revenue, orders)\n• Bar chart visualization\n• Dark theme\n• Responsive grid layout\n\n→ Check the **Preview** panel!\n\nWant me to add more charts, tables, or interactive elements?`;
+    return hasSystemPrompt
+      ? `✅ Generated a **comprehensive** dashboard with:\n\n• Sidebar navigation with icons\n• Stats cards (users, revenue, orders, conversion)\n• Bar chart visualization with tooltips\n• Dark theme with smooth animations\n• Responsive grid layout\n• Real-time data ready\n• Export data functionality\n• Date range selector\n• Search and filter\n• Notification badges\n• User profile dropdown\n• Breadcrumb navigation\n\n→ Check the **Preview** panel!\n\n**Advanced features I can add:**\n• Line charts, pie charts, area charts\n• Data tables with sorting/pagination\n• Real-time updates (WebSocket)\n• Custom widgets\n• Theme customization\n• Data export (CSV, PDF)\n• User management\n• Settings panel\n• Activity log\n\nWant me to add more charts, tables, or interactive elements?`
+      : `✅ Generated a dashboard with:\n\n• Sidebar navigation\n• Stats cards (users, revenue, orders)\n• Bar chart visualization\n• Dark theme\n• Responsive grid layout\n\n→ Check the **Preview** panel!\n\nWant me to add more charts, tables, or interactive elements?`;
   }
 
-  return `✅ I've generated code based on your description.\n\n→ Check the **Preview** panel to see it rendered live!\n\nYou can:\n• Ask me to modify specific parts\n• Request a different style or layout\n• Add new features\n• Switch to a different framework\n\nWhat would you like to change?`;
+  return hasSystemPrompt
+    ? `✅ I've generated **production-ready** code based on your description.\n\n→ Check the **Preview** panel to see it rendered live!\n\n**What's included:**\n• Complete, working implementation\n• Error handling and edge cases\n• Responsive design\n• Accessibility compliant\n• Performance optimized\n• Clean, maintainable code\n• Comments for complex logic\n\n**You can:**\n• Ask me to modify specific parts\n• Request a different style or layout\n• Add new features\n• Switch to a different framework\n• Add tests\n• Add documentation\n• Optimize performance\n\n**What would you like to do next?**`
+    : `✅ I've generated code based on your description.\n\n→ Check the **Preview** panel to see it rendered live!\n\nYou can:\n• Ask me to modify specific parts\n• Request a different style or layout\n• Add new features\n• Switch to a different framework\n\nWhat would you like to change?`;
 }
