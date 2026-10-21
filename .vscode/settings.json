@@ -1,0 +1,96 @@
+{
+  // Editor Settings
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+  "editor.tabSize": 2,
+  "editor.insertSpaces": true,
+  "editor.detectIndentation": false,
+  "editor.minimap.enabled": false,
+  "editor.bracketPairColorization.enabled": true,
+  "editor.guides.bracketPairs": true,
+  
+  // TypeScript Settings
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+  
+  // Tailwind CSS Settings
+  "tailwindCSS.classAttributes": ["class", "className", "class:list", "classList", "ngClass"],
+  "tailwindCSS.emmetCompletions": true,
+  "tailwindCSS.includeLanguages": {
+    "typescript": "javascript",
+    "typescriptreact": "javascript"
+  },
+  
+  // File Settings
+  "files.associations": {
+    "*.css": "tailwindcss"
+  },
+  "files.exclude": {
+    "**/node_modules": true,
+    "**/dist": true,
+    "**/.git": true
+  },
+  
+  // Search Settings
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/dist": true,
+    "**/package-lock.json": true
+  },
+  
+  // Terminal Settings
+  "terminal.integrated.defaultProfile.linux": "bash",
+  "terminal.integrated.defaultProfile.osx": "zsh",
+  "terminal.integrated.defaultProfile.windows": "PowerShell",
+  
+  // Emmet Settings
+  "emmet.includeLanguages": {
+    "javascript": "javascriptreact",
+    "typescript": "typescriptreact"
+  },
+  
+  // Better Comments
+  "better-comments.tags": [
+    {
+      "tag": "!",
+      "color": "#FF2D00",
+      "strikethrough": false
+    },
+    {
+      "tag": "?",
+      "color": "#3498DB",
+      "strikethrough": false
+    },
+    {
+      "tag": "//",
+      "color": "#474747",
+      "strikethrough": true
+    },
+    {
+      "tag": "todo",
+      "color": "#FF8C00",
+      "strikethrough": false
+    },
+    {
+      "tag": "*",
+      "color": "#98C379",
+      "strikethrough": false
+    }
+  ],
+  
+  // Error Lens
+  "errorLens.enabledDiagnosticLevels": ["error", "warning", "info"],
+  "errorLens.delay": 500,
+  
+  // Spell Checker
+  "cSpell.words": [
+    "OpenAI",
+    "KittenTTS",
+    "xerj",
+    "CRUCIBLE",
+    "DumbTerm"
+  ]
+}
