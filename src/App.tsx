@@ -23,6 +23,7 @@ import { generateCode, generateResponse } from './utils/codeGenerator';
 import { pendingActions, executeAfterConfirmation, requestConfirmation } from './utils/safetySystem';
 import { taskQueue, createTaskFromPrompt } from './utils/taskQueue';
 import { needleIntegration, startNeedleMonitoring } from './utils/needleIntegration';
+import { parseDeviceCommand, generatePermissionMessage, executeDeviceCommand, permissionManager } from './utils/deviceControl';
 import { PanelRight, PanelBottom, Maximize2, Terminal } from 'lucide-react';
 
 export type PanelView = 'chat' | 'preview' | 'mind' | 'terminal' | 'projects' | 'templates' | 'settings' | 'build' | 'ram' | 'voice' | 'autocorrect' | 'connectors' | 'tasks' | 'errors';
@@ -120,6 +121,65 @@ function App() {
       id: crypto.randomUUID(), role: 'user', content, timestamp: new Date(),
     };
     setMessages(prev => [...prev, userMsg]);
+
+    // Check if this is a device control command
+    const deviceCommand = parseDeviceCommand(content);
+    if (deviceCommand) {
+      // Handle device control
+      setIsAIBusy(true);
+      setAiStatus('Analyzing device command...');
+      
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Generate permission request
+      const permissionMessage = generatePermissionMessage(deviceCommand);
+      const permissionRequest = permissionManager.createRequest(deviceCommand);
+      
+      const aiMsg: ChatMessage = {
+        id: crypto.randomUUID(), role: 'assistant',
+        content: permissionMessage, timestamp: new Date(),
+      };
+      setMessages(prev => [...prev, aiMsg]);
+      setIsAIBusy(false);
+      setAiStatus('');
+      return;
+    }
+
+    // Check if this is a permission response (yes/no)
+    const lowerContent = content.toLowerCase().trim();
+    const pendingRequests = permissionManager.getPendingRequests();
+    if (pendingRequests.length > 0 && (lowerContent === 'yes' || lowerContent === 'no')) {
+      const lastRequest = pendingRequests[pendingRequests.length - 1];
+      
+      if (lowerContent === 'yes') {
+        permissionManager.grantPermission(lastRequest.id);
+        setIsAIBusy(true);
+        setAiStatus('Executing device command...');
+        
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        // Execute the command
+        const result = await executeDeviceCommand(lastRequest.command);
+        
+        const aiMsg: ChatMessage = {
+          id: crypto.randomUUID(), role: 'assistant',
+          content: result.message, timestamp: new Date(),
+        };
+        setMessages(prev => [...prev, aiMsg]);
+        setIsAIBusy(false);
+        setAiStatus('');
+      } else {
+        permissionManager.denyPermission(lastRequest.id);
+        const aiMsg: ChatMessage = {
+          id: crypto.randomUUID(), role: 'assistant',
+          content: '✓ Command cancelled.', timestamp: new Date(),
+        };
+        setMessages(prev => [...prev, aiMsg]);
+      }
+      return;
+    }
+
+    // Normal code generation flow
     setIsAIBusy(true);
     setAiStatus('Analyzing your request...');
     setShowTerminal(true);

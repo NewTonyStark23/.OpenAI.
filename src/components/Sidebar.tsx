@@ -4,7 +4,7 @@ import {
   MessageSquare, Eye, Brain, Terminal, FolderOpen, Layout,
   ChevronLeft, ChevronRight, LogOut, Settings, Rocket,
   Activity, Volume2, Wand2, FileCode, Plus, Folder, ChevronDown,
-  PanelRight, PanelBottom, Maximize2, Minimize2, Zap, ListTodo, AlertTriangle
+  PanelRight, PanelBottom, Maximize2, Minimize2, Zap, ListTodo, AlertTriangle, GitBranch
 } from 'lucide-react';
 import type { PanelView, Project, AuthMode } from '../App';
 
@@ -48,7 +48,7 @@ export default function Sidebar({
         </button>
       </div>
 
-      {/* Icon Nav (always visible) */}
+      {/* Icon Nav (always visible) - Only essential panels */}
       <div className={`flex ${collapsed ? 'flex-col' : 'flex-row'} border-b border-[#2a2a2a] ${collapsed ? 'py-2' : 'p-2'} gap-1`}>
         <button
           onClick={() => setActivePanel('chat')}
@@ -58,24 +58,6 @@ export default function Sidebar({
           title="Chat"
         >
           <MessageSquare size={16} />
-        </button>
-        <button
-          onClick={() => setActivePanel('preview')}
-          className={`p-2 rounded transition-colors ${
-            activePanel === 'preview' ? 'bg-purple-600/20 text-purple-400' : 'text-gray-400 hover:bg-[#2a2a2a]'
-          }`}
-          title="Preview"
-        >
-          <Eye size={16} />
-        </button>
-        <button
-          onClick={() => setActivePanel('terminal')}
-          className={`p-2 rounded transition-colors ${
-            activePanel === 'terminal' ? 'bg-purple-600/20 text-purple-400' : 'text-gray-400 hover:bg-[#2a2a2a]'
-          }`}
-          title="Terminal"
-        >
-          <Terminal size={16} />
         </button>
         {!collapsed && (
           <>
@@ -102,9 +84,9 @@ export default function Sidebar({
               className={`p-2 rounded transition-colors ${
                 activePanel === 'connectors' ? 'bg-purple-600/20 text-purple-400' : 'text-gray-400 hover:bg-[#2a2a2a]'
               }`}
-              title="Connectors"
+              title="Repositories"
             >
-              <Zap size={16} />
+              <GitBranch size={16} />
             </button>
             <button
               onClick={() => setActivePanel('tasks')}
