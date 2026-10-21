@@ -22,6 +22,7 @@ import { taskQueue, createTaskFromPrompt } from './utils/taskQueue';
 import { needleIntegration, startNeedleMonitoring } from './utils/needleIntegration';
 import { parseDeviceCommand, generatePermissionMessage, executeDeviceCommand, permissionManager } from './utils/deviceControl';
 import { getSystemPrompt } from './utils/systemPrompt';
+import { sendMessageToAI } from './utils/aiBackend';
 import { PanelRight, PanelBottom, Maximize2, Terminal } from 'lucide-react';
 
 export type PanelView = 'chat' | 'preview' | 'mind' | 'terminal' | 'projects' | 'settings' | 'connectors' | 'tasks' | 'errors' | 'deploy' | 'prompts';
@@ -199,11 +200,19 @@ function App() {
 
     await new Promise(resolve => setTimeout(resolve, 400));
     
-    // Get system prompt and generate response with it
+    // Get system prompt and send to real AI backend
     const systemPrompt = getSystemPrompt();
+    const conversationHistory = messages.map(m => ({
+      role: m.role as 'user' | 'assistant',
+      content: m.content
+    }));
+    
+    setAiStatus('Thinking...');
+    const aiResponse = await sendMessageToAI(content, systemPrompt, conversationHistory);
+    
     const aiMsg: ChatMessage = {
       id: crypto.randomUUID(), role: 'assistant',
-      content: generateResponse(content, systemPrompt), timestamp: new Date(),
+      content: aiResponse, timestamp: new Date(),
     };
     setMessages(prev => [...prev, aiMsg]);
     setIsAIBusy(false);
